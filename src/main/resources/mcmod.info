@@ -1,0 +1,18 @@
+[
+{
+  "modid": "integratedterminalscompat",
+  "name": "IntegratedTerminals-Compat",
+  "description": "Integrated Terminals compatibility with other mods. This mod is automatically packaged with Integrated Terminals.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "logoFile": "assets/integratedterminalscompat/textures/logo.png",
+  "url": "https://github.com/CyclopsMC/IntegratedTerminals-Compat",
+  "updateUrl": "https://minecraft.curseforge.com/projects/TODO",
+  "authorList": [ "rubensworks (aka kroeserr)" ],
+  "credits": "rubensworks (aka kroeserr)",
+  "parent": "",
+  "screenshots": [],
+  "dependencies": [],
+  "requiredMods": [ "forge", "cyclopscore" ]
+}
+]

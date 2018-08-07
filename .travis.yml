@@ -1,0 +1,46 @@
+language: java
+jdk: oraclejdk8
+notifications:
+  email: false
+env:
+  global:
+  - TERM=dumb
+
+before_install: '[ "${TRAVIS_PULL_REQUEST}" != "false" ] || openssl aes-256-cbc -K $encrypted_cfa89b307ba7_key -iv $encrypted_cfa89b307ba7_iv -in keystore.jks.enc -out keystore.jks -d'
+install: ./gradlew setupCIWorkspace -S
+script: ./gradlew build -S
+
+cache:
+  directories:
+    - '$HOME/.m2'
+    - '$HOME/.gradle'
+before_cache:
+    - rm -f $HOME/.gradle/caches/*/*.lock
+
+branches:
+  except:
+  - /^release-.*$/
+
+deploy:
+  - provider: script
+    skip_cleanup: true
+    script: ./gradlew curseforge -S
+    on:
+      all_branches: true
+      repo: CyclopsMC/IntegratedTerminals-Compat
+      tags: true
+  - provider: releases
+    skip_cleanup: true
+    api_key:
+      secure: TODO
+    on:
+      all_branches: true
+      repo: CyclopsMC/IntegratedTerminals-Compat
+      tags: true
+  - provider: script
+    skip_cleanup: true
+    script: ./gradlew uploadArchives -S
+    on:
+      all_branches: true
+      repo: CyclopsMC/IntegratedTerminals-Compat
+      condition: "$TRAVIS_BRANCH =~ ^(master|release).*$"
