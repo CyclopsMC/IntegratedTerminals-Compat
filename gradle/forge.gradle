@@ -5,6 +5,10 @@ repositories {
         name "Cyclops Repo"
         url "https://oss.jfrog.org/artifactory/simple/libs-release/"
     }
+    maven {
+        name 'DVS1 Maven FS'
+        url 'http://dvs1.progwml6.com/files/maven'
+    }
 }
 dependencies {
     // Add something like 'integratedterminals_version_local=0.1.0-DEV' to your gradle.properties if you want to use a custom local Integrated Terminals version.
@@ -39,6 +43,8 @@ dependencies {
             exclude group: 'org.cyclops.cyclopscore', module: 'CyclopsCore'
         }
     }
+
+    deobfCompile "mezz.jei:jei_${config.jei_version}" // https://dvs1.progwml6.com/jenkins/
 
     // Project lombok
     compile "org.projectlombok:lombok:1.14.4"

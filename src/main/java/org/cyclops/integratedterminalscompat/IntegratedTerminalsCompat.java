@@ -12,7 +12,9 @@ import org.cyclops.cyclopscore.config.extendedconfig.ItemConfigReference;
 import org.cyclops.cyclopscore.init.ItemCreativeTab;
 import org.cyclops.cyclopscore.init.ModBaseVersionable;
 import org.cyclops.cyclopscore.init.RecipeHandler;
+import org.cyclops.cyclopscore.modcompat.ModCompatLoader;
 import org.cyclops.cyclopscore.proxy.ICommonProxy;
+import org.cyclops.integratedterminalscompat.modcompat.jei.JEIModCompat;
 
 /**
  * The main mod class of this mod.
@@ -45,6 +47,14 @@ public class IntegratedTerminalsCompat extends ModBaseVersionable {
 
     public IntegratedTerminalsCompat() {
         super(Reference.MOD_ID, Reference.MOD_NAME, Reference.MOD_VERSION);
+    }
+
+    @Override
+    protected void loadModCompats(ModCompatLoader modCompatLoader) {
+        super.loadModCompats(modCompatLoader);
+
+        // Mod compats
+        modCompatLoader.addModCompat(new JEIModCompat());
     }
 
     @Override
