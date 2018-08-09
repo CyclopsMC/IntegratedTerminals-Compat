@@ -5,8 +5,6 @@ import mezz.jei.api.IModPlugin;
 import mezz.jei.api.IModRegistry;
 import mezz.jei.api.JEIPlugin;
 import mezz.jei.api.recipe.VanillaRecipeCategoryUid;
-import net.minecraft.client.Minecraft;
-import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -17,8 +15,8 @@ import org.cyclops.integratedterminals.api.terminalstorage.ITerminalStorageTabCl
 import org.cyclops.integratedterminals.api.terminalstorage.event.TerminalStorageTabClientLoadButtonsEvent;
 import org.cyclops.integratedterminals.api.terminalstorage.event.TerminalStorageTabClientSearchFieldUpdateEvent;
 import org.cyclops.integratedterminals.client.gui.container.GuiTerminalStorage;
-import org.cyclops.integratedterminals.inventory.container.ContainerTerminalStorage;
 import org.cyclops.integratedterminals.part.PartTypes;
+import org.cyclops.integratedterminalscompat.modcompat.jei.terminalstorage.TerminalStorageAdvancedGuiHandler;
 import org.cyclops.integratedterminalscompat.modcompat.jei.terminalstorage.TerminalStorageRecipeTransferHandler;
 import org.cyclops.integratedterminalscompat.modcompat.jei.terminalstorage.button.TerminalButtonItemStackCraftingGridJeiSearchSync;
 
@@ -40,6 +38,7 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
             // Storage terminal click handler
             registry.addRecipeClickArea(GuiTerminalStorage.class, 86, 76, 22, 15, VanillaRecipeCategoryUid.CRAFTING);
             registry.getRecipeTransferRegistry().addUniversalRecipeTransferHandler(new TerminalStorageRecipeTransferHandler(registry.getJeiHelpers().recipeTransferHandlerHelper()));
+            registry.addAdvancedGuiHandlers(new TerminalStorageAdvancedGuiHandler());
             registry.addRecipeCatalyst(new ItemStack(PartTypes.TERMINAL_STORAGE.getItem()), VanillaRecipeCategoryUid.CRAFTING);
 
             MinecraftForge.EVENT_BUS.register(this);
