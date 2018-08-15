@@ -66,6 +66,7 @@ public class TerminalButtonItemStackCraftingGridJeiSearchSync
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     public void getTooltip(EntityPlayer player, ITooltipFlag tooltipFlag, List<String> lines) {
         lines.add(L10NHelpers.localize("gui.integratedterminalscompat.terminal_storage.craftinggrid.jeisync.info"));
         lines.add(TextFormatting.ITALIC + L10NHelpers.localize(
