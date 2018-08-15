@@ -5,6 +5,7 @@ import mezz.jei.api.IModPlugin;
 import mezz.jei.api.IModRegistry;
 import mezz.jei.api.JEIPlugin;
 import mezz.jei.api.recipe.VanillaRecipeCategoryUid;
+import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -15,6 +16,7 @@ import org.cyclops.integratedterminals.api.terminalstorage.ITerminalStorageTabCl
 import org.cyclops.integratedterminals.api.terminalstorage.event.TerminalStorageTabClientLoadButtonsEvent;
 import org.cyclops.integratedterminals.api.terminalstorage.event.TerminalStorageTabClientSearchFieldUpdateEvent;
 import org.cyclops.integratedterminals.client.gui.container.GuiTerminalStorage;
+import org.cyclops.integratedterminals.inventory.container.ContainerTerminalStorage;
 import org.cyclops.integratedterminals.part.PartTypes;
 import org.cyclops.integratedterminalscompat.modcompat.jei.terminalstorage.TerminalStorageAdvancedGuiHandler;
 import org.cyclops.integratedterminalscompat.modcompat.jei.terminalstorage.TerminalStorageRecipeTransferHandler;
@@ -52,7 +54,8 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
 
     @SubscribeEvent
     public void onTerminalStorageButtons(TerminalStorageTabClientLoadButtonsEvent event) {
-        event.getButtons().add(new TerminalButtonItemStackCraftingGridJeiSearchSync());
+        event.getButtons().add(new TerminalButtonItemStackCraftingGridJeiSearchSync(
+                event.getContainer().getGuiState(), event.getClientTab()));
     }
 
     protected boolean isSearchSynced(ITerminalStorageTabClient<?> clientTab) {
