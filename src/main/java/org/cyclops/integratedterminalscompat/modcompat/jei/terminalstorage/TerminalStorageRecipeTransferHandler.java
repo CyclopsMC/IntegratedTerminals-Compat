@@ -14,9 +14,8 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import org.cyclops.commoncapabilities.api.capability.itemhandler.ItemMatch;
 import org.cyclops.commoncapabilities.api.ingredient.IngredientComponent;
-import org.cyclops.cyclopscore.ingredient.collection.IIngredientCollection;
-import org.cyclops.cyclopscore.ingredient.collection.IngredientArrayList;
-import org.cyclops.cyclopscore.ingredient.collection.IngredientList;
+import org.cyclops.cyclopscore.ingredient.collection.IIngredientCollectionMutable;
+import org.cyclops.cyclopscore.ingredient.collection.IngredientCollectionPrototypeMap;
 import org.cyclops.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentClient;
 import org.cyclops.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentItemStackCrafting;
 import org.cyclops.integratedterminals.inventory.container.ContainerTerminalStorage;
@@ -60,7 +59,8 @@ public class TerminalStorageRecipeTransferHandler implements IRecipeTransferHand
                         container.getTabClient(container.getSelectedTab());
                 List<TerminalStorageTabIngredientComponentClient.InstanceWithMetadata<ItemStack>> unfilteredIngredients = tabClient
                         .getUnfilteredIngredientsView(container.getSelectedChannel());
-                IngredientList<ItemStack, Integer> hayStack = new IngredientList<>(IngredientComponent.ITEMSTACK, unfilteredIngredients
+                IIngredientCollectionMutable<ItemStack, Integer> hayStack = new IngredientCollectionPrototypeMap<>(IngredientComponent.ITEMSTACK);
+                hayStack.addAll(unfilteredIngredients
                         .stream()
                         .map(i -> i.getInstance())
                         .collect(Collectors.toList()));
@@ -70,9 +70,19 @@ public class TerminalStorageRecipeTransferHandler implements IRecipeTransferHand
                     IGuiIngredient<ItemStack> ingredient = entry.getValue();
                     if (ingredient != null && ingredient.isInput()) {
                         int slot = entry.getKey();
-                        if (!ingredient.getAllIngredients().isEmpty() && ingredient.getAllIngredients().stream()
-                                .noneMatch((i) -> hayStack.contains(i, ItemMatch.ITEM | ItemMatch.DAMAGE | ItemMatch.NBT))) {
-                            slotsMissingItems.add(slot);
+                        if (!ingredient.getAllIngredients().isEmpty()) {
+                            boolean found = false;
+                            for (ItemStack itemStack : ingredient.getAllIngredients()) {
+                                if (hayStack.contains(itemStack, ItemMatch.ITEM | ItemMatch.DAMAGE | ItemMatch.NBT)) {
+                                    hayStack.remove(itemStack);
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (!found) {
+                                slotsMissingItems.add(slot);
+                            }
+
                         }
                     }
                 }
