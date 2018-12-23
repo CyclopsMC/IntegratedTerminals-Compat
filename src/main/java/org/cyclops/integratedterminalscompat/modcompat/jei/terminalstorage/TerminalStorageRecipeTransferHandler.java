@@ -13,7 +13,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import org.cyclops.commoncapabilities.api.capability.itemhandler.ItemMatch;
+import org.cyclops.commoncapabilities.api.ingredient.IngredientComponent;
 import org.cyclops.cyclopscore.ingredient.collection.IIngredientCollection;
+import org.cyclops.cyclopscore.ingredient.collection.IngredientArrayList;
+import org.cyclops.cyclopscore.ingredient.collection.IngredientList;
 import org.cyclops.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentClient;
 import org.cyclops.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentItemStackCrafting;
 import org.cyclops.integratedterminals.inventory.container.ContainerTerminalStorage;
@@ -23,6 +26,7 @@ import org.cyclops.integratedterminalscompat.network.packet.TerminalStorageIngre
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Handles recipe clicking from JEI.
@@ -54,8 +58,12 @@ public class TerminalStorageRecipeTransferHandler implements IRecipeTransferHand
                 // Check in the local client view if the required recipe ingredients are available
                 TerminalStorageTabIngredientComponentClient tabClient = (TerminalStorageTabIngredientComponentClient)
                         container.getTabClient(container.getSelectedTab());
-                IIngredientCollection<ItemStack, Integer> unfilteredIngredients = tabClient
+                List<TerminalStorageTabIngredientComponentClient.InstanceWithMetadata<ItemStack>> unfilteredIngredients = tabClient
                         .getUnfilteredIngredientsView(container.getSelectedChannel());
+                IngredientList<ItemStack, Integer> hayStack = new IngredientList<>(IngredientComponent.ITEMSTACK, unfilteredIngredients
+                        .stream()
+                        .map(i -> i.getInstance())
+                        .collect(Collectors.toList()));
                 List<Integer> slotsMissingItems = Lists.newArrayList();
 
                 for (Map.Entry<Integer, ? extends IGuiIngredient<ItemStack>> entry : recipeLayout.getItemStacks().getGuiIngredients().entrySet()) {
@@ -63,7 +71,7 @@ public class TerminalStorageRecipeTransferHandler implements IRecipeTransferHand
                     if (ingredient != null && ingredient.isInput()) {
                         int slot = entry.getKey();
                         if (!ingredient.getAllIngredients().isEmpty() && ingredient.getAllIngredients().stream()
-                                .noneMatch((i) -> unfilteredIngredients.contains(i,ItemMatch.ITEM | ItemMatch.DAMAGE | ItemMatch.NBT))) {
+                                .noneMatch((i) -> hayStack.contains(i, ItemMatch.ITEM | ItemMatch.DAMAGE | ItemMatch.NBT))) {
                             slotsMissingItems.add(slot);
                         }
                     }
