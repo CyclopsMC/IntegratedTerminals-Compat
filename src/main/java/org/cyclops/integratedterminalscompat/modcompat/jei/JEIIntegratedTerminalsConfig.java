@@ -38,7 +38,7 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
     public void register(@Nonnull IModRegistry registry) {
         if (JEIModCompat.canBeUsed) {
             // Storage terminal click handler
-            registry.addRecipeClickArea(GuiTerminalStorage.class, 86, 76, 22, 15, VanillaRecipeCategoryUid.CRAFTING);
+            //registry.addRecipeClickArea(GuiTerminalStorage.class, 86, 76, 22, 15, VanillaRecipeCategoryUid.CRAFTING); // Removed because otherwise non-crafting tabs will also always have the click area.
             registry.getRecipeTransferRegistry().addUniversalRecipeTransferHandler(new TerminalStorageRecipeTransferHandler(registry.getJeiHelpers().recipeTransferHandlerHelper()));
             registry.addAdvancedGuiHandlers(new TerminalStorageAdvancedGuiHandler());
             registry.addRecipeCatalyst(new ItemStack(PartTypes.TERMINAL_STORAGE.getItem()), VanillaRecipeCategoryUid.CRAFTING);
