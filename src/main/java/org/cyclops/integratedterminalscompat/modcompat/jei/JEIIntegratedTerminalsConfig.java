@@ -81,10 +81,10 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
         if (event.getGui() instanceof GuiTerminalStorage) {
             GuiTerminalStorage gui = ((GuiTerminalStorage) event.getGui());
             if (jeiRuntime.getIngredientListOverlay().hasKeyboardFocus()) {
-                GuiTextFieldExtended fieldSearch = gui.getFieldSearch();
-                fieldSearch.setText(jeiRuntime.getIngredientFilter().getFilterText());
                 gui.getSelectedClientTab().ifPresent(tab -> {
                     if (isSearchSynced(tab)) {
+                        GuiTextFieldExtended fieldSearch = gui.getFieldSearch();
+                        fieldSearch.setText(jeiRuntime.getIngredientFilter().getFilterText());
                         tab.setInstanceFilter(gui.getContainer().getSelectedChannel(), fieldSearch.getText() + "");
                     }
                 });
