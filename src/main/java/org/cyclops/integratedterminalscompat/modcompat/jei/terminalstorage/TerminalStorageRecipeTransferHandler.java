@@ -62,7 +62,8 @@ public class TerminalStorageRecipeTransferHandler implements IRecipeTransferHand
                 IIngredientCollectionMutable<ItemStack, Integer> hayStack = new IngredientCollectionPrototypeMap<>(IngredientComponent.ITEMSTACK);
                 hayStack.addAll(unfilteredIngredients
                         .stream()
-                        .map(i -> i.getInstance())
+                        .filter(i -> i.getCraftingOption() == null)
+                        .map(TerminalStorageTabIngredientComponentClient.InstanceWithMetadata::getInstance)
                         .collect(Collectors.toList()));
                 List<Integer> slotsMissingItems = Lists.newArrayList();
 
