@@ -61,7 +61,7 @@ public class TerminalButtonItemStackCraftingGridJeiSearchSync
     }
 
     @Override
-    public String getUnlocalizedName() {
+    public String getTranslationKey() {
         return "gui.integratedterminalscompat.terminal_storage.craftinggrid.jeisync";
     }
 
