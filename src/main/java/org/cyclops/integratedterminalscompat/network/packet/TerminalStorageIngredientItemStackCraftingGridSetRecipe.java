@@ -93,12 +93,7 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
                     if (!slot.getHasStack()) {
                         ItemStack extracted = ItemStack.EMPTY;
                         for (ItemStack itemStack : entry.getValue()) {
-                            if (maxTransfer) {
-                                extracted = storage.extract(matcher.withQuantity(itemStack, itemStack.getMaxStackSize()),
-                                        ItemMatch.ITEM | ItemMatch.DAMAGE | ItemMatch.NBT, false);
-                            } else {
-                                extracted = storage.extract(itemStack, ItemMatch.EXACT, false);
-                            }
+                            extracted = storage.extract(itemStack, ItemMatch.EXACT, false);
                             if (!extracted.isEmpty()) {
                                 break;
                             }
