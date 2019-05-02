@@ -25,6 +25,7 @@ import org.cyclops.integratedterminalscompat.network.packet.TerminalStorageIngre
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -52,7 +53,7 @@ public class TerminalStorageRecipeTransferHandler implements IRecipeTransferHand
             return new TransferError();
         }
 
-        if (container.getSelectedTab().equals(TerminalStorageTabIngredientComponentItemStackCrafting.NAME.toString())) {
+        if (Objects.equals(container.getSelectedTab(), TerminalStorageTabIngredientComponentItemStackCrafting.NAME.toString())) {
             if (!doTransfer) {
                 // Check in the local client view if the required recipe ingredients are available
                 TerminalStorageTabIngredientComponentClient tabClient = (TerminalStorageTabIngredientComponentClient)
