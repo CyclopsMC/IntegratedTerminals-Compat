@@ -2,15 +2,14 @@ package org.cyclops.integratedterminalscompat.modcompat.jei.terminalstorage;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import mezz.jei.api.gui.IGuiIngredient;
+import mezz.jei.api.constants.VanillaRecipeCategoryUid;
 import mezz.jei.api.gui.IRecipeLayout;
-import mezz.jei.api.recipe.VanillaRecipeCategoryUid;
+import mezz.jei.api.gui.ingredient.IGuiIngredient;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandlerHelper;
 import mezz.jei.util.Translator;
-import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import org.cyclops.commoncapabilities.api.capability.itemhandler.ItemMatch;
 import org.cyclops.commoncapabilities.api.ingredient.IngredientComponent;
@@ -48,7 +47,7 @@ public class TerminalStorageRecipeTransferHandler implements IRecipeTransferHand
     @Nullable
     @Override
     public IRecipeTransferError transferRecipe(ContainerTerminalStorage container, IRecipeLayout recipeLayout,
-                                               EntityPlayer player, boolean maxTransfer, boolean doTransfer) {
+                                               PlayerEntity player, boolean maxTransfer, boolean doTransfer) {
         if (!recipeLayout.getRecipeCategory().getUid().equals(VanillaRecipeCategoryUid.CRAFTING)) {
             return new TransferError();
         }
@@ -75,7 +74,7 @@ public class TerminalStorageRecipeTransferHandler implements IRecipeTransferHand
                         if (!ingredient.getAllIngredients().isEmpty()) {
                             boolean found = false;
                             for (ItemStack itemStack : ingredient.getAllIngredients()) {
-                                if (hayStack.contains(itemStack, ItemMatch.ITEM | ItemMatch.DAMAGE | ItemMatch.NBT)) {
+                                if (hayStack.contains(itemStack, ItemMatch.ITEM | ItemMatch.NBT)) {
                                     hayStack.remove(itemStack);
                                     found = true;
                                     break;
@@ -125,7 +124,7 @@ public class TerminalStorageRecipeTransferHandler implements IRecipeTransferHand
         }
 
         @Override
-        public void showError(Minecraft minecraft, int mouseX, int mouseY, IRecipeLayout recipeLayout, int recipeX, int recipeY) {
+        public void showError(int i, int i1, IRecipeLayout iRecipeLayout, int i2, int i3) {
             // Silently fail
         }
     }
