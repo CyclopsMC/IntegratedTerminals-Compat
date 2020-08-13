@@ -68,8 +68,11 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
 
     @SubscribeEvent
     public void onTerminalStorageButtons(TerminalStorageTabClientLoadButtonsEvent event) {
-        event.getButtons().add(new TerminalButtonItemStackCraftingGridJeiSearchSync(
-                event.getContainer().getGuiState(), event.getClientTab()));
+        if (!event.getButtons().stream()
+                .anyMatch((button) -> button instanceof TerminalButtonItemStackCraftingGridJeiSearchSync)) {
+            event.getButtons().add(new TerminalButtonItemStackCraftingGridJeiSearchSync(
+                    event.getContainer().getGuiState(), event.getClientTab()));
+        }
     }
 
     protected boolean isSearchSynced(ITerminalStorageTabClient<?> clientTab) {
