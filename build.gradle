@@ -32,7 +32,7 @@ loadProperties()
 
 version = config.mod_version
 group = "org.cyclops.integratedterminalscompat"
-archivesBaseName = "IntegratedTerminalsCompat"
+archivesBaseName = "IntegratedTerminals-Compat"
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
