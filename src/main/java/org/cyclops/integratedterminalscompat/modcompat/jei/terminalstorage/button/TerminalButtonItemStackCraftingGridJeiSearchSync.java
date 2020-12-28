@@ -49,7 +49,7 @@ public class TerminalButtonItemStackCraftingGridJeiSearchSync
     @OnlyIn(Dist.CLIENT)
     public ButtonImage createButton(int x, int y) {
         return new ButtonImage(x, y,
-                L10NHelpers.localize("gui.integratedterminalscompat.terminal_storage.craftinggrid.jeisync"),
+                new TranslationTextComponent("gui.integratedterminalscompat.terminal_storage.craftinggrid.jeisync"),
                 (b) -> {},
                 active ? Images.BUTTON_BACKGROUND_ACTIVE : Images.BUTTON_BACKGROUND_INACTIVE,
                 Images.BUTTON_MIDDLE_JEI_SYNC);
@@ -75,7 +75,7 @@ public class TerminalButtonItemStackCraftingGridJeiSearchSync
         lines.add(new TranslationTextComponent("gui.integratedterminalscompat.terminal_storage.craftinggrid.jeisync.info"));
         lines.add(new TranslationTextComponent(
                 active ? "general.cyclopscore.info.enabled" : "general.cyclopscore.info.disabled")
-                .applyTextStyle(TextFormatting.ITALIC));
+                .mergeStyle(TextFormatting.ITALIC));
     }
 
     public boolean isActive() {

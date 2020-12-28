@@ -2,6 +2,7 @@ package org.cyclops.integratedterminalscompat.modcompat.jei.terminalstorage;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import mezz.jei.api.constants.VanillaRecipeCategoryUid;
 import mezz.jei.api.gui.IRecipeLayout;
 import mezz.jei.api.gui.ingredient.IGuiIngredient;
@@ -124,7 +125,7 @@ public class TerminalStorageRecipeTransferHandler implements IRecipeTransferHand
         }
 
         @Override
-        public void showError(int i, int i1, IRecipeLayout iRecipeLayout, int i2, int i3) {
+        public void showError(MatrixStack matrixStack, int i, int i1, IRecipeLayout iRecipeLayout, int i2, int i3) {
             // Silently fail
         }
     }
