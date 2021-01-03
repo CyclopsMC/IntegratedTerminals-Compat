@@ -83,7 +83,7 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
 
                 // Clear current grid into storage
                 TerminalStorageIngredientItemStackCraftingGridClear.clearGrid(tabCommonCrafting, tabServerCrafting,
-                        channel, false, player);
+                        channel, true, player);
 
                 // Try filling the grid with the given recipe
 
