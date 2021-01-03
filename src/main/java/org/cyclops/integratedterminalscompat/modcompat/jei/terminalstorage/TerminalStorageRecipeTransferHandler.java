@@ -11,13 +11,18 @@ import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandlerHelper;
 import mezz.jei.util.Translator;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.items.wrapper.InvWrapper;
 import org.cyclops.commoncapabilities.api.capability.itemhandler.ItemMatch;
 import org.cyclops.commoncapabilities.api.ingredient.IngredientComponent;
+import org.cyclops.commoncapabilities.ingredient.storage.IngredientComponentStorageWrapperHandlerItemStack;
 import org.cyclops.cyclopscore.ingredient.collection.IIngredientCollectionMutable;
 import org.cyclops.cyclopscore.ingredient.collection.IngredientCollectionPrototypeMap;
+import org.cyclops.integratedterminals.api.terminalstorage.ITerminalStorageTabCommon;
 import org.cyclops.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentClient;
 import org.cyclops.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentItemStackCrafting;
+import org.cyclops.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentItemStackCraftingCommon;
 import org.cyclops.integratedterminals.inventory.container.ContainerTerminalStorage;
 import org.cyclops.integratedterminalscompat.IntegratedTerminalsCompat;
 import org.cyclops.integratedterminalscompat.network.packet.TerminalStorageIngredientItemStackCraftingGridSetRecipe;
@@ -54,8 +59,18 @@ public class TerminalStorageRecipeTransferHandler implements IRecipeTransferHand
         }
 
         if (Objects.equals(container.getSelectedTab(), TerminalStorageTabIngredientComponentItemStackCrafting.NAME.toString())) {
+            ITerminalStorageTabCommon tabCommon = container.getTabCommon(container.getSelectedTab());
+            TerminalStorageTabIngredientComponentItemStackCraftingCommon tabCommonCrafting =
+                    (TerminalStorageTabIngredientComponentItemStackCraftingCommon) tabCommon;
+
             if (!doTransfer) {
-                // Check in the local client view if the required recipe ingredients are available
+                // Check in the player inventory and local client view if the required recipe ingredients are available
+
+                // Build player inventory index
+                IIngredientCollectionMutable<ItemStack, Integer> hayStackPlayer = new IngredientCollectionPrototypeMap<>(IngredientComponent.ITEMSTACK);
+                hayStackPlayer.addAll(player.inventory.mainInventory);
+
+                // Build local client view of storage
                 TerminalStorageTabIngredientComponentClient tabClient = (TerminalStorageTabIngredientComponentClient)
                         container.getTabClient(container.getSelectedTab());
                 List<TerminalStorageTabIngredientComponentClient.InstanceWithMetadata<ItemStack>> unfilteredIngredients = tabClient
@@ -66,8 +81,8 @@ public class TerminalStorageRecipeTransferHandler implements IRecipeTransferHand
                         .filter(i -> i.getCraftingOption() == null)
                         .map(TerminalStorageTabIngredientComponentClient.InstanceWithMetadata::getInstance)
                         .collect(Collectors.toList()));
-                List<Integer> slotsMissingItems = Lists.newArrayList();
 
+                List<Integer> slotsMissingItems = Lists.newArrayList();
                 for (Map.Entry<Integer, ? extends IGuiIngredient<ItemStack>> entry : recipeLayout.getItemStacks().getGuiIngredients().entrySet()) {
                     IGuiIngredient<ItemStack> ingredient = entry.getValue();
                     if (ingredient != null && ingredient.isInput()) {
@@ -75,6 +90,14 @@ public class TerminalStorageRecipeTransferHandler implements IRecipeTransferHand
                         if (!ingredient.getAllIngredients().isEmpty()) {
                             boolean found = false;
                             for (ItemStack itemStack : ingredient.getAllIngredients()) {
+                                // First check in player inventory
+                                if (hayStackPlayer.contains(itemStack, ItemMatch.ITEM | ItemMatch.NBT)) {
+                                    hayStackPlayer.remove(itemStack);
+                                    found = true;
+                                    break;
+                                }
+
+                                // Then check the storage
                                 if (hayStack.contains(itemStack, ItemMatch.ITEM | ItemMatch.NBT)) {
                                     hayStack.remove(itemStack);
                                     found = true;
@@ -96,20 +119,46 @@ public class TerminalStorageRecipeTransferHandler implements IRecipeTransferHand
 
                 return null;
             } else {
+                IngredientComponentStorageWrapperHandlerItemStack.ComponentStorageWrapper playerInventory =
+                        new IngredientComponentStorageWrapperHandlerItemStack.ComponentStorageWrapper(IngredientComponent.ITEMSTACK, new InvWrapper(player.inventory));
+
                 // Send a packet to the server if the recipe effectively needs to be applied to the grid
-                Map<Integer, List<ItemStack>> slottedIngredients = Maps.newHashMap();
+                Map<Integer, ItemStack> slottedIngredientsFromPlayer = Maps.newHashMap();
+                Map<Integer, List<ItemStack>> slottedIngredientsFromStorage = Maps.newHashMap();
+                int slotOffset = tabCommonCrafting.getSlotCrafting().slotNumber;
                 for (Map.Entry<Integer, ? extends IGuiIngredient<ItemStack>> entry : recipeLayout.getItemStacks().getGuiIngredients().entrySet()) {
                     IGuiIngredient<ItemStack> ingredient = entry.getValue();
                     if (ingredient != null && ingredient.isInput()) {
-                        int slot = entry.getKey();
+                        int slotId = entry.getKey();
+                        boolean found = false;
 
-                        slottedIngredients.put(slot, ingredient.getAllIngredients());
+                        // First check if we can transfer from player inventory
+                        for (ItemStack itemStack : ingredient.getAllIngredients()) {
+                            if (!playerInventory.extract(itemStack, ItemMatch.ITEM | ItemMatch.NBT, true).isEmpty()) {
+                                found = true;
+
+                                // Move from player to crafting grid
+                                ItemStack extracted = playerInventory.extract(itemStack, ItemMatch.ITEM | ItemMatch.NBT, false);
+                                Slot slot = container.getSlot(slotId + slotOffset);
+                                slot.putStack(extracted);
+
+                                // Do the exact same thing server-side
+                                slottedIngredientsFromPlayer.put(slotId, itemStack);
+
+                                break;
+                            }
+                        }
+
+                        if (!found) {
+                            // Otherwise, request them from the storage
+                            slottedIngredientsFromStorage.put(slotId, ingredient.getAllIngredients());
+                        }
                     }
                 }
 
                 IntegratedTerminalsCompat._instance.getPacketHandler().sendToServer(
                         new TerminalStorageIngredientItemStackCraftingGridSetRecipe(container.getSelectedTab(),
-                                container.getSelectedChannel(), maxTransfer, slottedIngredients));
+                                container.getSelectedChannel(), maxTransfer, slottedIngredientsFromPlayer, slottedIngredientsFromStorage));
                 return null;
             }
         }

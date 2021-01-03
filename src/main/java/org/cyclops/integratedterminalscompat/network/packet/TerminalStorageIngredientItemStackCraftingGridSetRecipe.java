@@ -7,10 +7,12 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.items.wrapper.InvWrapper;
 import org.cyclops.commoncapabilities.api.capability.itemhandler.ItemMatch;
 import org.cyclops.commoncapabilities.api.ingredient.IIngredientMatcher;
 import org.cyclops.commoncapabilities.api.ingredient.IngredientComponent;
 import org.cyclops.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
+import org.cyclops.commoncapabilities.ingredient.storage.IngredientComponentStorageWrapperHandlerItemStack;
 import org.cyclops.cyclopscore.network.CodecField;
 import org.cyclops.cyclopscore.network.PacketCodec;
 import org.cyclops.integratedterminals.api.terminalstorage.ITerminalStorageTabCommon;
@@ -37,18 +39,22 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
     @CodecField
     private boolean maxTransfer;
     @CodecField
-    private Map<Integer, List<ItemStack>> slottedIngredients;
+    private Map<Integer, ItemStack> slottedIngredientsFromPlayer;
+    @CodecField
+    private Map<Integer, List<ItemStack>> slottedIngredientsFromStorage;
 
     public TerminalStorageIngredientItemStackCraftingGridSetRecipe() {
 
     }
 
     public TerminalStorageIngredientItemStackCraftingGridSetRecipe(String tabId, int channel, boolean maxTransfer,
-                                                                   Map<Integer, List<ItemStack>> slottedIngredients) {
+                                                                   Map<Integer, ItemStack> slottedIngredientsFromPlayer,
+                                                                   Map<Integer, List<ItemStack>> slottedIngredientsFromStorage) {
         this.tabId = tabId;
         this.channel = channel;
         this.maxTransfer = maxTransfer;
-        this.slottedIngredients = slottedIngredients;
+        this.slottedIngredientsFromPlayer = slottedIngredientsFromPlayer;
+        this.slottedIngredientsFromStorage = slottedIngredientsFromStorage;
     }
 
     @Override
@@ -80,10 +86,20 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
                         channel, false, player);
 
                 // Try filling the grid with the given recipe
+
+                // Fill from player inventory
+                IngredientComponentStorageWrapperHandlerItemStack.ComponentStorageWrapper playerInventory =
+                        new IngredientComponentStorageWrapperHandlerItemStack.ComponentStorageWrapper(IngredientComponent.ITEMSTACK, new InvWrapper(player.inventory));
+                for (Map.Entry<Integer, ItemStack> entry : this.slottedIngredientsFromPlayer.entrySet()) {
+                    ItemStack extracted = playerInventory.extract(entry.getValue(), ItemMatch.ITEM | ItemMatch.NBT, false);
+                    Slot slot = container.getSlot(entry.getKey() + slotOffset);
+                    slot.putStack(extracted);
+                }
+
+                // Fill from storage
                 IIngredientComponentStorage<ItemStack, Integer> storage = tabServerCrafting.getIngredientNetwork()
                         .getChannel(channel);
-                IIngredientMatcher<ItemStack, Integer> matcher = IngredientComponent.ITEMSTACK.getMatcher();
-                for (Map.Entry<Integer, List<ItemStack>> entry : this.slottedIngredients.entrySet()) {
+                for (Map.Entry<Integer, List<ItemStack>> entry : this.slottedIngredientsFromStorage.entrySet()) {
                     int slotId = entry.getKey() + slotOffset;
                     Slot slot = container.getSlot(slotId);
 
