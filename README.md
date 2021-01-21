@@ -1,6 +1,6 @@
 ## IntegratedTerminals-Compat
 
-[![Build Status](https://travis-ci.org/CyclopsMC/IntegratedTerminals-Compat.svg?branch=master-1.12)](https://travis-ci.org/CyclopsMC/IntegratedTerminals-Compat)
+[![Build Status](https://github.com/CyclopsMC/IntegratedTerminals-Compat/workflows/CI/badge.svg)](https://github.com/CyclopsMC/IntegratedTerminals-Compat/actions?query=workflow%3ACI)
 [![Download](https://img.shields.io/maven-metadata/v/http/cyclopsmc.jfrog.io/cyclopsmc/libs-release/org/cyclops/integratedterminalscompat/IntegratedTerminals-Compat/maven-metadata.xml.svg) ](https://oss.jfrog.org/artifactory/simple/libs-release/org/cyclops/integratedterminalscompat/IntegratedTerminals-Compat/)
 
 [Integrated Terminals](https://github.com/CyclopsMC/IntegratedTerminals) compatibility with other mods.
