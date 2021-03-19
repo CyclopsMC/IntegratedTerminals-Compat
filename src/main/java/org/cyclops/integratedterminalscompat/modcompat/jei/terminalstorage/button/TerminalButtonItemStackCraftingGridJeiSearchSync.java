@@ -30,15 +30,22 @@ public class TerminalButtonItemStackCraftingGridJeiSearchSync
 
     private final TerminalStorageState state;
     private final String buttonName;
+    private final ITerminalStorageTabClient<?> clientTab;
 
     private boolean active;
 
     public TerminalButtonItemStackCraftingGridJeiSearchSync(TerminalStorageState state, ITerminalStorageTabClient<?> clientTab) {
         this.state = state;
         this.buttonName = "itemstack_grid_jeisearchsync";
+        this.clientTab = clientTab;
 
-        if (state.hasButton(clientTab.getName().toString(), this.buttonName)) {
-            CompoundNBT data = (CompoundNBT) state.getButton(clientTab.getName().toString(), this.buttonName);
+        reloadFromState();
+    }
+
+    @Override
+    public void reloadFromState() {
+        if (state.hasButton(clientTab.getTabSettingsName().toString(), this.buttonName)) {
+            CompoundNBT data = (CompoundNBT) state.getButton(clientTab.getTabSettingsName().toString(), this.buttonName);
             this.active = data.getBoolean("active");
         } else {
             this.active = false;
@@ -61,7 +68,7 @@ public class TerminalButtonItemStackCraftingGridJeiSearchSync
 
         CompoundNBT data = new CompoundNBT();
         data.putBoolean("active", active);
-        state.setButton(clientTab.getName().toString(), this.buttonName, data);
+        state.setButton(clientTab.getTabSettingsName().toString(), this.buttonName, data);
     }
 
     @Override
