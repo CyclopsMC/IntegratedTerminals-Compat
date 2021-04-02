@@ -23,7 +23,7 @@ import org.cyclops.integratedterminals.api.terminalstorage.ITerminalStorageTabCo
 import org.cyclops.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentClient;
 import org.cyclops.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentItemStackCrafting;
 import org.cyclops.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentItemStackCraftingCommon;
-import org.cyclops.integratedterminals.inventory.container.ContainerTerminalStorage;
+import org.cyclops.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import org.cyclops.integratedterminalscompat.IntegratedTerminalsCompat;
 import org.cyclops.integratedterminalscompat.network.packet.TerminalStorageIngredientItemStackCraftingGridSetRecipe;
 
@@ -37,22 +37,24 @@ import java.util.stream.Collectors;
  * Handles recipe clicking from JEI.
  * @author rubensworks
  */
-public class TerminalStorageRecipeTransferHandler implements IRecipeTransferHandler<ContainerTerminalStorage> {
+public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalStorageBase<?>> implements IRecipeTransferHandler<T> {
 
     private final IRecipeTransferHandlerHelper recipeTransferHandlerHelper;
+    private final Class<T> clazz;
 
-    public TerminalStorageRecipeTransferHandler(IRecipeTransferHandlerHelper recipeTransferHandlerHelper) {
+    public TerminalStorageRecipeTransferHandler(IRecipeTransferHandlerHelper recipeTransferHandlerHelper, Class<T> clazz) {
         this.recipeTransferHandlerHelper = recipeTransferHandlerHelper;
+        this.clazz = clazz;
     }
 
     @Override
-    public Class<ContainerTerminalStorage> getContainerClass() {
-        return ContainerTerminalStorage.class;
+    public Class<T> getContainerClass() {
+        return this.clazz;
     }
 
     @Nullable
     @Override
-    public IRecipeTransferError transferRecipe(ContainerTerminalStorage container, IRecipeLayout recipeLayout,
+    public IRecipeTransferError transferRecipe(ContainerTerminalStorageBase container, IRecipeLayout recipeLayout,
                                                PlayerEntity player, boolean maxTransfer, boolean doTransfer) {
         if (!recipeLayout.getRecipeCategory().getUid().equals(VanillaRecipeCategoryUid.CRAFTING)) {
             return new TransferError();

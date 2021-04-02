@@ -18,6 +18,8 @@ import org.cyclops.integratedterminals.api.terminalstorage.ITerminalStorageTabCl
 import org.cyclops.integratedterminals.api.terminalstorage.event.TerminalStorageTabClientLoadButtonsEvent;
 import org.cyclops.integratedterminals.api.terminalstorage.event.TerminalStorageTabClientSearchFieldUpdateEvent;
 import org.cyclops.integratedterminals.client.gui.container.ContainerScreenTerminalStorage;
+import org.cyclops.integratedterminals.inventory.container.ContainerTerminalStorageItem;
+import org.cyclops.integratedterminals.inventory.container.ContainerTerminalStoragePart;
 import org.cyclops.integratedterminals.part.PartTypes;
 import org.cyclops.integratedterminalscompat.Reference;
 import org.cyclops.integratedterminalscompat.modcompat.jei.terminalstorage.TerminalStorageGuiHandler;
@@ -40,12 +42,15 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
 
     @Override
     public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
-        registration.addUniversalRecipeTransferHandler(new TerminalStorageRecipeTransferHandler(registration.getTransferHelper()));
+        registration.addUniversalRecipeTransferHandler(
+                new TerminalStorageRecipeTransferHandler<>(registration.getTransferHelper(), ContainerTerminalStoragePart.class));
+        registration.addUniversalRecipeTransferHandler(
+                new TerminalStorageRecipeTransferHandler<>(registration.getTransferHelper(), ContainerTerminalStorageItem.class));
     }
 
     @Override
     public void registerGuiHandlers(IGuiHandlerRegistration registration) {
-        registration.addGuiContainerHandler(ContainerScreenTerminalStorage.class, new TerminalStorageGuiHandler());
+        registration.addGenericGuiContainerHandler(ContainerScreenTerminalStorage.class, new TerminalStorageGuiHandler());
 
         // Removed because otherwise non-crafting tabs will also always have the click area.
         // registration.addRecipeClickArea(ContainerScreenTerminalStorage.class, 86, 76, 22, 15, VanillaRecipeCategoryUid.CRAFTING);
@@ -96,7 +101,7 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
     public void onKeyTyped(GuiScreenEvent.KeyboardKeyReleasedEvent.Post event) {
         // Copy the JEI search box contents into the terminal search box.
         if (event.getGui() instanceof ContainerScreenTerminalStorage) {
-            ContainerScreenTerminalStorage gui = ((ContainerScreenTerminalStorage) event.getGui());
+            ContainerScreenTerminalStorage<?, ?> gui = ((ContainerScreenTerminalStorage<?, ?>) event.getGui());
             if (jeiRuntime.getIngredientListOverlay().hasKeyboardFocus()) {
                 gui.getSelectedClientTab().ifPresent(tab -> {
                     if (isSearchSynced(tab)) {

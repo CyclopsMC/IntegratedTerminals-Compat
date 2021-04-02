@@ -9,7 +9,6 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.items.wrapper.InvWrapper;
 import org.cyclops.commoncapabilities.api.capability.itemhandler.ItemMatch;
-import org.cyclops.commoncapabilities.api.ingredient.IIngredientMatcher;
 import org.cyclops.commoncapabilities.api.ingredient.IngredientComponent;
 import org.cyclops.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
 import org.cyclops.commoncapabilities.ingredient.storage.IngredientComponentStorageWrapperHandlerItemStack;
@@ -18,9 +17,8 @@ import org.cyclops.cyclopscore.network.PacketCodec;
 import org.cyclops.integratedterminals.api.terminalstorage.ITerminalStorageTabCommon;
 import org.cyclops.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentItemStackCraftingCommon;
 import org.cyclops.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentServer;
-import org.cyclops.integratedterminals.inventory.container.ContainerTerminalStorage;
+import org.cyclops.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import org.cyclops.integratedterminals.network.packet.TerminalStorageIngredientItemStackCraftingGridClear;
-import org.cyclops.integratedterminals.part.PartTypeTerminalStorage;
 
 import java.util.List;
 import java.util.Map;
@@ -70,15 +68,14 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
 
     @Override
     public void actionServer(World world, ServerPlayerEntity player) {
-        if(player.openContainer instanceof ContainerTerminalStorage) {
-            ContainerTerminalStorage container = ((ContainerTerminalStorage) player.openContainer);
+        if(player.openContainer instanceof ContainerTerminalStorageBase) {
+            ContainerTerminalStorageBase<?> container = ((ContainerTerminalStorageBase<?>) player.openContainer);
             ITerminalStorageTabCommon tabCommon = container.getTabCommon(tabId);
             if (tabCommon instanceof TerminalStorageTabIngredientComponentItemStackCraftingCommon) {
                 TerminalStorageTabIngredientComponentServer<ItemStack, Integer> tabServerCrafting =
                         (TerminalStorageTabIngredientComponentServer<ItemStack, Integer>) container.getTabServer(tabId);
                 TerminalStorageTabIngredientComponentItemStackCraftingCommon tabCommonCrafting =
                         (TerminalStorageTabIngredientComponentItemStackCraftingCommon) tabCommon;
-                PartTypeTerminalStorage.State partState = container.getPartState().get();
                 int slotOffset = tabCommonCrafting.getSlotCrafting().slotNumber;
 
                 // Clear current grid into storage
