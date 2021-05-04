@@ -1,7 +1,7 @@
 ## IntegratedTerminals-Compat
 
 [![Build Status](https://github.com/CyclopsMC/IntegratedTerminals-Compat/workflows/CI/badge.svg)](https://github.com/CyclopsMC/IntegratedTerminals-Compat/actions?query=workflow%3ACI)
-[![Download](https://img.shields.io/maven-metadata/v/http/cyclopsmc.jfrog.io/cyclopsmc/libs-release/org/cyclops/integratedterminalscompat/IntegratedTerminals-Compat/maven-metadata.xml.svg) ](https://oss.jfrog.org/artifactory/simple/libs-release/org/cyclops/integratedterminalscompat/IntegratedTerminals-Compat/)
+[![Download](https://img.shields.io/static/v1?label=Maven&message=GitHub%20Packages&color=blue)](https://github.com/CyclopsMC/packages/packages/770075)
 
 [Integrated Terminals](https://github.com/CyclopsMC/IntegratedTerminals) compatibility with other mods.
 This mod is automatically packaged with [Integrated Terminals](https://github.com/CyclopsMC/IntegratedTerminals).
