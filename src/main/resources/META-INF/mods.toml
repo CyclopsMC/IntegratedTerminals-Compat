@@ -15,19 +15,19 @@ Integrated Terminals compatibility with other mods. This mod is automatically pa
 [[dependencies.integratedterminalscompat]]
     modId="cyclopscore"
     mandatory=true
-    versionRange="[1.11.1,)"
+    versionRange="[1.11.6,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.integratedterminalscompat]]
     modId="integrateddynamics"
     mandatory=true
-    versionRange="[1.1.14,)"
+    versionRange="[1.8.0,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.integratedterminalscompat]]
     modId="commoncapabilities"
     mandatory=true
-    versionRange="[2.5.0,)"
+    versionRange="[2.7.0,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.integratedterminalscompat]]
