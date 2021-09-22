@@ -68,6 +68,12 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
             if (!doTransfer) {
                 // Check in the player inventory and local client view if the required recipe ingredients are available
 
+                // Build crafting grid index
+                IIngredientCollectionMutable<ItemStack, Integer> hayStackCraftingGrid = new IngredientCollectionPrototypeMap<>(IngredientComponent.ITEMSTACK);
+                for (int slot = 0; slot < tabCommonCrafting.getInventoryCrafting().getSizeInventory(); slot++) {
+                    hayStackCraftingGrid.add(tabCommonCrafting.getInventoryCrafting().getStackInSlot(slot));
+                }
+
                 // Build player inventory index
                 IIngredientCollectionMutable<ItemStack, Integer> hayStackPlayer = new IngredientCollectionPrototypeMap<>(IngredientComponent.ITEMSTACK);
                 hayStackPlayer.addAll(player.inventory.mainInventory);
@@ -92,7 +98,14 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
                         if (!ingredient.getAllIngredients().isEmpty()) {
                             boolean found = false;
                             for (ItemStack itemStack : ingredient.getAllIngredients()) {
-                                // First check in player inventory
+                                // First check in the crafting grid
+                                if (hayStackCraftingGrid.contains(itemStack, ItemMatch.ITEM | ItemMatch.NBT)) {
+                                    hayStackPlayer.remove(itemStack);
+                                    found = true;
+                                    break;
+                                }
+
+                                // Then check in player inventory
                                 if (hayStackPlayer.contains(itemStack, ItemMatch.ITEM | ItemMatch.NBT)) {
                                     hayStackPlayer.remove(itemStack);
                                     found = true;
@@ -134,7 +147,8 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
                         int slotId = entry.getKey();
                         boolean found = false;
 
-                        // First check if we can transfer from player inventory
+                        // First check if we can transfer from the player inventory
+                        // No need to check the crafting grid, as the server will first clear the grid into the storage in TerminalStorageIngredientItemStackCraftingGridSetRecipe
                         for (ItemStack itemStack : ingredient.getAllIngredients()) {
                             if (!playerInventory.extract(itemStack, ItemMatch.ITEM | ItemMatch.NBT, true).isEmpty()) {
                                 found = true;
