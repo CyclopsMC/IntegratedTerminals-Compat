@@ -8,7 +8,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.items.wrapper.InvWrapper;
-import org.cyclops.commoncapabilities.api.capability.itemhandler.ItemMatch;
 import org.cyclops.commoncapabilities.api.ingredient.IngredientComponent;
 import org.cyclops.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
 import org.cyclops.commoncapabilities.ingredient.storage.IngredientComponentStorageWrapperHandlerItemStack;
@@ -19,6 +18,7 @@ import org.cyclops.integratedterminals.core.terminalstorage.TerminalStorageTabIn
 import org.cyclops.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentServer;
 import org.cyclops.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import org.cyclops.integratedterminals.network.packet.TerminalStorageIngredientItemStackCraftingGridClear;
+import org.cyclops.integratedterminalscompat.modcompat.jei.JEIIntegratedTerminalsConfig;
 
 import java.util.List;
 import java.util.Map;
@@ -88,7 +88,8 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
                 IngredientComponentStorageWrapperHandlerItemStack.ComponentStorageWrapper playerInventory =
                         new IngredientComponentStorageWrapperHandlerItemStack.ComponentStorageWrapper(IngredientComponent.ITEMSTACK, new InvWrapper(player.inventory));
                 for (Map.Entry<Integer, ItemStack> entry : this.slottedIngredientsFromPlayer.entrySet()) {
-                    ItemStack extracted = playerInventory.extract(entry.getValue(), ItemMatch.ITEM | ItemMatch.NBT, false);
+                    int matchCondition = JEIIntegratedTerminalsConfig.getItemStackMatchCondition(entry.getValue());
+                    ItemStack extracted = playerInventory.extract(entry.getValue(), matchCondition, false);
                     Slot slot = container.getSlot(entry.getKey() + slotOffset);
                     slot.putStack(extracted);
                 }
@@ -103,7 +104,8 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
                     if (!slot.getHasStack()) {
                         ItemStack extracted = ItemStack.EMPTY;
                         for (ItemStack itemStack : entry.getValue()) {
-                            extracted = storage.extract(itemStack, ItemMatch.EXACT, false);
+                            int matchCondition = JEIIntegratedTerminalsConfig.getItemStackMatchCondition(itemStack);
+                            extracted = storage.extract(itemStack, matchCondition, false);
                             if (!extracted.isEmpty()) {
                                 break;
                             }

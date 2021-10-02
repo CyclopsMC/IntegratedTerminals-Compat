@@ -3,7 +3,10 @@ package org.cyclops.integratedterminalscompat.modcompat.jei;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.VanillaRecipeCategoryUid;
+import mezz.jei.api.ingredients.subtypes.ISubtypeManager;
+import mezz.jei.api.ingredients.subtypes.UidContext;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
+import mezz.jei.api.registration.IModIngredientRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeTransferRegistration;
 import mezz.jei.api.runtime.IJeiRuntime;
@@ -12,6 +15,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import org.cyclops.commoncapabilities.api.capability.itemhandler.ItemMatch;
 import org.cyclops.cyclopscore.client.gui.component.input.WidgetTextFieldExtended;
 import org.cyclops.integratedterminals.api.terminalstorage.ITerminalButton;
 import org.cyclops.integratedterminals.api.terminalstorage.ITerminalStorageTabClient;
@@ -34,10 +38,28 @@ import org.cyclops.integratedterminalscompat.modcompat.jei.terminalstorage.butto
 @JeiPlugin
 public class JEIIntegratedTerminalsConfig implements IModPlugin {
 
+    public static ISubtypeManager subTypeManager;
+
     private IJeiRuntime jeiRuntime;
 
     public JEIIntegratedTerminalsConfig() {
         MinecraftForge.EVENT_BUS.register(this);
+    }
+
+    public static int getItemStackMatchCondition(ItemStack itemStack) {
+        // By default, JEI ignores NBT when matching items, unless sub type info is set.
+
+        // Ideally, we would have to do a plain item extraction, and filter the items that match the subtype string,
+        // but just using the heuristic that the existence of sub type info implies NBT matching seems to work out so far.
+        // So if we would run into problems with this, this filtering is what we'd need to do.
+
+        String subTypeInfo = JEIIntegratedTerminalsConfig.subTypeManager.getSubtypeInfo(itemStack, UidContext.Ingredient);
+        return subTypeInfo == null ? ItemMatch.ITEM : ItemMatch.ITEM | ItemMatch.NBT;
+    }
+
+    @Override
+    public void registerIngredients(IModIngredientRegistration registration) {
+        subTypeManager = registration.getSubtypeManager();
     }
 
     @Override

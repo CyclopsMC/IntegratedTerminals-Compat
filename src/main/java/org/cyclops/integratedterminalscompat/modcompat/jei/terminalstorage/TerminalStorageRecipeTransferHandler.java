@@ -14,7 +14,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.wrapper.InvWrapper;
-import org.cyclops.commoncapabilities.api.capability.itemhandler.ItemMatch;
 import org.cyclops.commoncapabilities.api.ingredient.IngredientComponent;
 import org.cyclops.commoncapabilities.ingredient.storage.IngredientComponentStorageWrapperHandlerItemStack;
 import org.cyclops.cyclopscore.ingredient.collection.IIngredientCollectionMutable;
@@ -25,6 +24,7 @@ import org.cyclops.integratedterminals.core.terminalstorage.TerminalStorageTabIn
 import org.cyclops.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentItemStackCraftingCommon;
 import org.cyclops.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import org.cyclops.integratedterminalscompat.IntegratedTerminalsCompat;
+import org.cyclops.integratedterminalscompat.modcompat.jei.JEIIntegratedTerminalsConfig;
 import org.cyclops.integratedterminalscompat.network.packet.TerminalStorageIngredientItemStackCraftingGridSetRecipe;
 
 import javax.annotation.Nullable;
@@ -98,22 +98,24 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
                         if (!ingredient.getAllIngredients().isEmpty()) {
                             boolean found = false;
                             for (ItemStack itemStack : ingredient.getAllIngredients()) {
+                                int matchCondition = JEIIntegratedTerminalsConfig.getItemStackMatchCondition(itemStack);
+
                                 // First check in the crafting grid
-                                if (hayStackCraftingGrid.contains(itemStack, ItemMatch.ITEM | ItemMatch.NBT)) {
+                                if (hayStackCraftingGrid.contains(itemStack, matchCondition)) {
                                     hayStackPlayer.remove(itemStack);
                                     found = true;
                                     break;
                                 }
 
                                 // Then check in player inventory
-                                if (hayStackPlayer.contains(itemStack, ItemMatch.ITEM | ItemMatch.NBT)) {
+                                if (hayStackPlayer.contains(itemStack, matchCondition)) {
                                     hayStackPlayer.remove(itemStack);
                                     found = true;
                                     break;
                                 }
 
                                 // Then check the storage
-                                if (hayStack.contains(itemStack, ItemMatch.ITEM | ItemMatch.NBT)) {
+                                if (hayStack.contains(itemStack, matchCondition)) {
                                     hayStack.remove(itemStack);
                                     found = true;
                                     break;
@@ -150,11 +152,13 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
                         // First check if we can transfer from the player inventory
                         // No need to check the crafting grid, as the server will first clear the grid into the storage in TerminalStorageIngredientItemStackCraftingGridSetRecipe
                         for (ItemStack itemStack : ingredient.getAllIngredients()) {
-                            if (!playerInventory.extract(itemStack, ItemMatch.ITEM | ItemMatch.NBT, true).isEmpty()) {
+                            int matchCondition = JEIIntegratedTerminalsConfig.getItemStackMatchCondition(itemStack);
+
+                            if (!playerInventory.extract(itemStack, matchCondition, true).isEmpty()) {
                                 found = true;
 
                                 // Move from player to crafting grid
-                                ItemStack extracted = playerInventory.extract(itemStack, ItemMatch.ITEM | ItemMatch.NBT, false);
+                                ItemStack extracted = playerInventory.extract(itemStack, matchCondition, false);
                                 Slot slot = container.getSlot(slotId + slotOffset);
                                 slot.putStack(extracted);
 
