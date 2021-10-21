@@ -14,6 +14,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.wrapper.InvWrapper;
+import org.apache.commons.lang3.tuple.Pair;
 import org.cyclops.commoncapabilities.api.ingredient.IngredientComponent;
 import org.cyclops.commoncapabilities.ingredient.storage.IngredientComponentStorageWrapperHandlerItemStack;
 import org.cyclops.cyclopscore.ingredient.collection.IIngredientCollectionMutable;
@@ -140,8 +141,8 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
                         new IngredientComponentStorageWrapperHandlerItemStack.ComponentStorageWrapper(IngredientComponent.ITEMSTACK, new InvWrapper(player.inventory));
 
                 // Send a packet to the server if the recipe effectively needs to be applied to the grid
-                Map<Integer, ItemStack> slottedIngredientsFromPlayer = Maps.newHashMap();
-                Map<Integer, List<ItemStack>> slottedIngredientsFromStorage = Maps.newHashMap();
+                Map<Integer, Pair<ItemStack, Integer>> slottedIngredientsFromPlayer = Maps.newHashMap();
+                Map<Integer, List<Pair<ItemStack, Integer>>> slottedIngredientsFromStorage = Maps.newHashMap();
                 int slotOffset = tabCommonCrafting.getSlotCrafting().slotNumber;
                 for (Map.Entry<Integer, ? extends IGuiIngredient<ItemStack>> entry : recipeLayout.getItemStacks().getGuiIngredients().entrySet()) {
                     IGuiIngredient<ItemStack> ingredient = entry.getValue();
@@ -163,7 +164,7 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
                                 slot.putStack(extracted);
 
                                 // Do the exact same thing server-side
-                                slottedIngredientsFromPlayer.put(slotId, itemStack);
+                                slottedIngredientsFromPlayer.put(slotId, Pair.of(itemStack, JEIIntegratedTerminalsConfig.getItemStackMatchCondition(itemStack)));
 
                                 break;
                             }
@@ -171,7 +172,10 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
 
                         if (!found) {
                             // Otherwise, request them from the storage
-                            slottedIngredientsFromStorage.put(slotId, ingredient.getAllIngredients());
+                            slottedIngredientsFromStorage.put(slotId, ingredient.getAllIngredients()
+                                    .stream()
+                                    .map(itemStack -> Pair.of(itemStack, JEIIntegratedTerminalsConfig.getItemStackMatchCondition(itemStack)))
+                                    .collect(Collectors.toList()));
                         }
                     }
                 }

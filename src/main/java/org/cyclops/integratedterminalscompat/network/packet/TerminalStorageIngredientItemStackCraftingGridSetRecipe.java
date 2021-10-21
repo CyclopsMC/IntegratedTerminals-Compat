@@ -8,6 +8,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.items.wrapper.InvWrapper;
+import org.apache.commons.lang3.tuple.Pair;
 import org.cyclops.commoncapabilities.api.ingredient.IngredientComponent;
 import org.cyclops.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
 import org.cyclops.commoncapabilities.ingredient.storage.IngredientComponentStorageWrapperHandlerItemStack;
@@ -18,7 +19,6 @@ import org.cyclops.integratedterminals.core.terminalstorage.TerminalStorageTabIn
 import org.cyclops.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentServer;
 import org.cyclops.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import org.cyclops.integratedterminals.network.packet.TerminalStorageIngredientItemStackCraftingGridClear;
-import org.cyclops.integratedterminalscompat.modcompat.jei.JEIIntegratedTerminalsConfig;
 
 import java.util.List;
 import java.util.Map;
@@ -37,17 +37,17 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
     @CodecField
     private boolean maxTransfer;
     @CodecField
-    private Map<Integer, ItemStack> slottedIngredientsFromPlayer;
+    private Map<Integer, Pair<ItemStack, Integer>> slottedIngredientsFromPlayer;
     @CodecField
-    private Map<Integer, List<ItemStack>> slottedIngredientsFromStorage;
+    private Map<Integer, List<Pair<ItemStack, Integer>>> slottedIngredientsFromStorage;
 
     public TerminalStorageIngredientItemStackCraftingGridSetRecipe() {
 
     }
 
     public TerminalStorageIngredientItemStackCraftingGridSetRecipe(String tabId, int channel, boolean maxTransfer,
-                                                                   Map<Integer, ItemStack> slottedIngredientsFromPlayer,
-                                                                   Map<Integer, List<ItemStack>> slottedIngredientsFromStorage) {
+                                                                   Map<Integer, Pair<ItemStack, Integer>> slottedIngredientsFromPlayer,
+                                                                   Map<Integer, List<Pair<ItemStack, Integer>>> slottedIngredientsFromStorage) {
         this.tabId = tabId;
         this.channel = channel;
         this.maxTransfer = maxTransfer;
@@ -87,9 +87,9 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
                 // Fill from player inventory
                 IngredientComponentStorageWrapperHandlerItemStack.ComponentStorageWrapper playerInventory =
                         new IngredientComponentStorageWrapperHandlerItemStack.ComponentStorageWrapper(IngredientComponent.ITEMSTACK, new InvWrapper(player.inventory));
-                for (Map.Entry<Integer, ItemStack> entry : this.slottedIngredientsFromPlayer.entrySet()) {
-                    int matchCondition = JEIIntegratedTerminalsConfig.getItemStackMatchCondition(entry.getValue());
-                    ItemStack extracted = playerInventory.extract(entry.getValue(), matchCondition, false);
+                for (Map.Entry<Integer, Pair<ItemStack, Integer>> entry : this.slottedIngredientsFromPlayer.entrySet()) {
+                    Integer matchCondition = entry.getValue().getRight();
+                    ItemStack extracted = playerInventory.extract(entry.getValue().getLeft(), matchCondition, false);
                     Slot slot = container.getSlot(entry.getKey() + slotOffset);
                     slot.putStack(extracted);
                 }
@@ -97,15 +97,15 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
                 // Fill from storage
                 IIngredientComponentStorage<ItemStack, Integer> storage = tabServerCrafting.getIngredientNetwork()
                         .getChannel(channel);
-                for (Map.Entry<Integer, List<ItemStack>> entry : this.slottedIngredientsFromStorage.entrySet()) {
+                for (Map.Entry<Integer, List<Pair<ItemStack, Integer>>> entry : this.slottedIngredientsFromStorage.entrySet()) {
                     int slotId = entry.getKey() + slotOffset;
                     Slot slot = container.getSlot(slotId);
 
                     if (!slot.getHasStack()) {
                         ItemStack extracted = ItemStack.EMPTY;
-                        for (ItemStack itemStack : entry.getValue()) {
-                            int matchCondition = JEIIntegratedTerminalsConfig.getItemStackMatchCondition(itemStack);
-                            extracted = storage.extract(itemStack, matchCondition, false);
+                        for (Pair<ItemStack, Integer> stackEntry : entry.getValue()) {
+                            int matchCondition = stackEntry.getRight();
+                            extracted = storage.extract(stackEntry.getLeft(), matchCondition, false);
                             if (!extracted.isEmpty()) {
                                 break;
                             }
