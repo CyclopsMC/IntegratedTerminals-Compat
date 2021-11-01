@@ -1,9 +1,12 @@
 package org.cyclops.integratedterminalscompat.network.packet;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -36,9 +39,7 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
     private int channel;
     @CodecField
     private boolean maxTransfer;
-    @CodecField
     private Map<Integer, Pair<ItemStack, Integer>> slottedIngredientsFromPlayer;
-    @CodecField
     private Map<Integer, List<Pair<ItemStack, Integer>>> slottedIngredientsFromStorage;
 
     public TerminalStorageIngredientItemStackCraftingGridSetRecipe() {
@@ -53,6 +54,53 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
         this.maxTransfer = maxTransfer;
         this.slottedIngredientsFromPlayer = slottedIngredientsFromPlayer;
         this.slottedIngredientsFromStorage = slottedIngredientsFromStorage;
+    }
+
+    @Override
+    public void encode(PacketBuffer output) {
+        super.encode(output);
+
+        // slottedIngredientsFromPlayer and slottedIngredientsFromStorage are encoded manually for more space efficiency
+        output.writeInt(slottedIngredientsFromPlayer.size());
+        for (Map.Entry<Integer, Pair<ItemStack, Integer>> entry : slottedIngredientsFromPlayer.entrySet()) {
+            output.writeInt(entry.getKey());
+            output.writeItemStack(entry.getValue().getLeft());
+            output.writeInt(entry.getValue().getRight());
+        }
+
+        output.writeInt(slottedIngredientsFromStorage.size());
+        for (Map.Entry<Integer, List<Pair<ItemStack, Integer>>> entry : slottedIngredientsFromStorage.entrySet()) {
+            output.writeInt(entry.getKey());
+            output.writeInt(entry.getValue().size());
+            for (Pair<ItemStack, Integer> subEntry : entry.getValue()) {
+                output.writeItemStack(subEntry.getLeft());
+                output.writeInt(subEntry.getRight());
+            }
+        }
+    }
+
+    @Override
+    public void decode(PacketBuffer input) {
+        super.decode(input);
+
+        // slottedIngredientsFromPlayer and slottedIngredientsFromStorage are encoded manually for more space efficiency
+        int entriesSlottedIngredientsFromPlayer = input.readInt();
+        this.slottedIngredientsFromPlayer = Maps.newHashMap();
+        for (int i = 0; i < entriesSlottedIngredientsFromPlayer; i++) {
+            this.slottedIngredientsFromPlayer.put(input.readInt(), Pair.of(input.readItemStack(), input.readInt()));
+        }
+
+        int entriesSlottedIngredientsFromStorage = input.readInt();
+        this.slottedIngredientsFromStorage = Maps.newHashMap();
+        for (int i = 0; i < entriesSlottedIngredientsFromStorage; i++) {
+            int key = input.readInt();
+            int entries = input.readInt();
+            List<Pair<ItemStack, Integer>> alternatives = Lists.newArrayListWithExpectedSize(entries);
+            for (int j = 0; j < entries; j++) {
+                alternatives.add(Pair.of(input.readItemStack(), input.readInt()));
+            }
+            this.slottedIngredientsFromStorage.put(key, alternatives);
+        }
     }
 
     @Override
