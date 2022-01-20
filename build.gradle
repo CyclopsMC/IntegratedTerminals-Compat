@@ -39,8 +39,9 @@ group = "org.cyclops.integratedterminalscompat"
 archivesBaseName = "IntegratedTerminals-Compat"
 
 // Set Java details
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+compileJava.options.compilerArgs << "-Xmaxerrs" << "9999"
+println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
 
 // Load secrets
 def getSecrets() {
@@ -55,6 +56,11 @@ Properties secrets = getSecrets();
 sourceSets {
     main
     test
+}
+
+configurations {
+    modLib
+    implementation.extendsFrom modLib
 }
 
 test {
@@ -121,8 +127,8 @@ dependencies {
             transitive = false
         }
     }
-	
-    runtimeOnly "com.google.re2j:re2j:1.1"
+
+    modLib "com.google.re2j:re2j:1.1"
 
     implementation fg.deobf("mezz.jei:jei-${project.jei_version}") // https://dvs1.progwml6.com/jenkins/
 }
@@ -140,6 +146,10 @@ minecraft {
                     source sourceSets.main
                 }
             }
+
+            lazyToken('minecraft_classpath') {
+                configurations.modLib.copyRecursive().resolve().collect { it.absolutePath }.join(File.pathSeparator)
+            }
         }
 
         server {
@@ -149,6 +159,10 @@ minecraft {
                 integratedterminalscompat {
                     source sourceSets.main
                 }
+            }
+
+            lazyToken('minecraft_classpath') {
+                configurations.modLib.copyRecursive().resolve().collect { it.absolutePath }.join(File.pathSeparator)
             }
         }
 
@@ -160,6 +174,10 @@ minecraft {
                 integratedterminalscompat {
                     source sourceSets.main
                 }
+            }
+
+            lazyToken('minecraft_classpath') {
+                configurations.modLib.copyRecursive().resolve().collect { it.absolutePath }.join(File.pathSeparator)
             }
         }
     }

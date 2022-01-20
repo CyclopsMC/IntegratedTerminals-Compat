@@ -1,11 +1,11 @@
 package org.cyclops.integratedterminalscompat.modcompat.jei.terminalstorage.button;
 
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.cyclops.cyclopscore.client.gui.component.button.ButtonImage;
@@ -45,7 +45,7 @@ public class TerminalButtonItemStackCraftingGridJeiSearchSync
     @Override
     public void reloadFromState() {
         if (state.hasButton(clientTab.getTabSettingsName().toString(), this.buttonName)) {
-            CompoundNBT data = (CompoundNBT) state.getButton(clientTab.getTabSettingsName().toString(), this.buttonName);
+            CompoundTag data = (CompoundTag) state.getButton(clientTab.getTabSettingsName().toString(), this.buttonName);
             this.active = data.getBoolean("active");
         } else {
             this.active = false;
@@ -56,7 +56,7 @@ public class TerminalButtonItemStackCraftingGridJeiSearchSync
     @OnlyIn(Dist.CLIENT)
     public ButtonImage createButton(int x, int y) {
         return new ButtonImage(x, y,
-                new TranslationTextComponent("gui.integratedterminalscompat.terminal_storage.craftinggrid.jeisync"),
+                new TranslatableComponent("gui.integratedterminalscompat.terminal_storage.craftinggrid.jeisync"),
                 (b) -> {},
                 active ? Images.BUTTON_BACKGROUND_ACTIVE : Images.BUTTON_BACKGROUND_INACTIVE,
                 Images.BUTTON_MIDDLE_JEI_SYNC);
@@ -66,7 +66,7 @@ public class TerminalButtonItemStackCraftingGridJeiSearchSync
     public void onClick(TerminalStorageTabIngredientComponentClient<?, ?> clientTab, @Nullable TerminalStorageTabIngredientComponentCommon<?, ?> commonTab, ButtonImage guiButton, int channel, int mouseButton) {
         this.active = !this.active;
 
-        CompoundNBT data = new CompoundNBT();
+        CompoundTag data = new CompoundTag();
         data.putBoolean("active", active);
         state.setButton(clientTab.getTabSettingsName().toString(), this.buttonName, data);
     }
@@ -78,11 +78,11 @@ public class TerminalButtonItemStackCraftingGridJeiSearchSync
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void getTooltip(PlayerEntity player, ITooltipFlag tooltipFlag, List<ITextComponent> lines) {
-        lines.add(new TranslationTextComponent("gui.integratedterminalscompat.terminal_storage.craftinggrid.jeisync.info"));
-        lines.add(new TranslationTextComponent(
+    public void getTooltip(Player player, TooltipFlag tooltipFlag, List<Component> lines) {
+        lines.add(new TranslatableComponent("gui.integratedterminalscompat.terminal_storage.craftinggrid.jeisync.info"));
+        lines.add(new TranslatableComponent(
                 active ? "general.cyclopscore.info.enabled" : "general.cyclopscore.info.disabled")
-                .withStyle(TextFormatting.ITALIC));
+                .withStyle(ChatFormatting.ITALIC));
     }
 
     public boolean isActive() {

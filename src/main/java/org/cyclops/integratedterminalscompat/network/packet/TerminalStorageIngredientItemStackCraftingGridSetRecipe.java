@@ -2,12 +2,12 @@ package org.cyclops.integratedterminalscompat.network.packet;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.container.Slot;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.items.wrapper.InvWrapper;
@@ -57,7 +57,7 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
     }
 
     @Override
-    public void encode(PacketBuffer output) {
+    public void encode(FriendlyByteBuf output) {
         super.encode(output);
 
         // slottedIngredientsFromPlayer and slottedIngredientsFromStorage are encoded manually for more space efficiency
@@ -80,7 +80,7 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
     }
 
     @Override
-    public void decode(PacketBuffer input) {
+    public void decode(FriendlyByteBuf input) {
         super.decode(input);
 
         // slottedIngredientsFromPlayer and slottedIngredientsFromStorage are encoded manually for more space efficiency
@@ -110,12 +110,12 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void actionClient(World world, PlayerEntity player) {
+    public void actionClient(Level world, Player player) {
 
     }
 
     @Override
-    public void actionServer(World world, ServerPlayerEntity player) {
+    public void actionServer(Level world, ServerPlayer player) {
         if(player.containerMenu instanceof ContainerTerminalStorageBase) {
             ContainerTerminalStorageBase<?> container = ((ContainerTerminalStorageBase<?>) player.containerMenu);
             ITerminalStorageTabCommon tabCommon = container.getTabCommon(tabId);
@@ -134,7 +134,7 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
 
                 // Fill from player inventory
                 IngredientComponentStorageWrapperHandlerItemStack.ComponentStorageWrapper playerInventory =
-                        new IngredientComponentStorageWrapperHandlerItemStack.ComponentStorageWrapper(IngredientComponent.ITEMSTACK, new InvWrapper(player.inventory));
+                        new IngredientComponentStorageWrapperHandlerItemStack.ComponentStorageWrapper(IngredientComponent.ITEMSTACK, new InvWrapper(player.getInventory()));
                 for (Map.Entry<Integer, Pair<ItemStack, Integer>> entry : this.slottedIngredientsFromPlayer.entrySet()) {
                     Integer matchCondition = entry.getValue().getRight();
                     ItemStack extracted = playerInventory.extract(entry.getValue().getLeft(), matchCondition, false);

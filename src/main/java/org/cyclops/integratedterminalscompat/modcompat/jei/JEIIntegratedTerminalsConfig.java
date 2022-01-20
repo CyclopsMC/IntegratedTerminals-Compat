@@ -10,9 +10,9 @@ import mezz.jei.api.registration.IModIngredientRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeTransferRegistration;
 import mezz.jei.api.runtime.IJeiRuntime;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.client.event.GuiScreenEvent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.cyclops.commoncapabilities.api.capability.itemhandler.ItemMatch;
@@ -54,7 +54,7 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
         // So if we would run into problems with this, this filtering is what we'd need to do.
 
         String subTypeInfo = JEIIntegratedTerminalsConfig.subTypeManager.getSubtypeInfo(itemStack, UidContext.Ingredient);
-        return subTypeInfo == null ? ItemMatch.ITEM : ItemMatch.ITEM | ItemMatch.NBT;
+        return subTypeInfo == null ? ItemMatch.ITEM : ItemMatch.ITEM | ItemMatch.TAG;
     }
 
     @Override
@@ -120,10 +120,10 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
     }
 
     @SubscribeEvent
-    public void onKeyTyped(GuiScreenEvent.KeyboardKeyReleasedEvent.Post event) {
+    public void onKeyTyped(ScreenEvent.KeyboardKeyReleasedEvent.Post event) {
         // Copy the JEI search box contents into the terminal search box.
-        if (event.getGui() instanceof ContainerScreenTerminalStorage) {
-            ContainerScreenTerminalStorage<?, ?> gui = ((ContainerScreenTerminalStorage<?, ?>) event.getGui());
+        if (event.getScreen() instanceof ContainerScreenTerminalStorage) {
+            ContainerScreenTerminalStorage<?, ?> gui = ((ContainerScreenTerminalStorage<?, ?>) event.getScreen());
             if (jeiRuntime.getIngredientListOverlay().hasKeyboardFocus()) {
                 gui.getSelectedClientTab().ifPresent(tab -> {
                     if (isSearchSynced(tab)) {

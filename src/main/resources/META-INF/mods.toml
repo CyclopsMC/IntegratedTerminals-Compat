@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="[34,)"
+loaderVersion="[39,)"
 issueTrackerURL="https://github.com/CyclopsMC/IntegratedTerminals-Compat/issues"
 displayURL="https://www.curseforge.com/minecraft/mc-mods/integrated-terminals"
 license="MIT"
@@ -15,7 +15,7 @@ Integrated Terminals compatibility with other mods. This mod is automatically pa
 [[dependencies.integratedterminalscompat]]
     modId="cyclopscore"
     mandatory=true
-    versionRange="[1.11.6,)"
+    versionRange="[1.12.1,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.integratedterminalscompat]]
@@ -27,24 +27,24 @@ Integrated Terminals compatibility with other mods. This mod is automatically pa
 [[dependencies.integratedterminalscompat]]
     modId="commoncapabilities"
     mandatory=true
-    versionRange="[2.7.0,)"
+    versionRange="[2.8.0,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.integratedterminalscompat]]
     modId="forge"
     mandatory=true
-    versionRange="[34,)"
+    versionRange="[39,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.integratedterminalscompat]]
     modId="integratedterminals"
     mandatory=true
-    versionRange="[1.0.14,)"
+    versionRange="[1.2.11,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.integratedterminalscompat]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.16.4,]"
+    versionRange="[1.18.1,]"
     ordering="NONE"
     side="BOTH"

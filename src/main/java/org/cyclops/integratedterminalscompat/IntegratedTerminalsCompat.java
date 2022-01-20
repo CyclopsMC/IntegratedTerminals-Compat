@@ -1,6 +1,6 @@
 package org.cyclops.integratedterminalscompat;
 
-import net.minecraft.item.ItemGroup;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.common.Mod;
@@ -27,7 +27,7 @@ public class IntegratedTerminalsCompat extends ModBaseVersionable<IntegratedTerm
     }
 
     @Override
-    public ItemGroup constructDefaultItemGroup() {
+    public CreativeModeTab constructDefaultCreativeModeTab() {
         // Uncomment the following line and specify an item config class to add a creative tab
         // return new ItemCreativeTab(this, new ItemConfigReference(ITEM CONFIG CLASS));
         return null;

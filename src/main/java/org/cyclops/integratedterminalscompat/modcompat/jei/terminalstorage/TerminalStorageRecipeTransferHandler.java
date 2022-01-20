@@ -2,7 +2,7 @@ package org.cyclops.integratedterminalscompat.modcompat.jei.terminalstorage;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import mezz.jei.api.constants.VanillaRecipeCategoryUid;
 import mezz.jei.api.gui.IRecipeLayout;
 import mezz.jei.api.gui.ingredient.IGuiIngredient;
@@ -10,9 +10,12 @@ import mezz.jei.api.recipe.transfer.IRecipeTransferError;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandlerHelper;
 import mezz.jei.util.Translator;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.container.Slot;
-import net.minecraft.item.ItemStack;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraftforge.items.wrapper.InvWrapper;
 import org.apache.commons.lang3.tuple.Pair;
 import org.cyclops.commoncapabilities.api.ingredient.IngredientComponent;
@@ -40,7 +43,7 @@ import mezz.jei.api.recipe.transfer.IRecipeTransferError.Type;
  * Handles recipe clicking from JEI.
  * @author rubensworks
  */
-public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalStorageBase<?>> implements IRecipeTransferHandler<T> {
+public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalStorageBase<?>> implements IRecipeTransferHandler<T, CraftingRecipe> {
 
     private final IRecipeTransferHandlerHelper recipeTransferHandlerHelper;
     private final Class<T> clazz;
@@ -55,14 +58,15 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
         return this.clazz;
     }
 
+    @Override
+    public Class<CraftingRecipe> getRecipeClass() {
+        return CraftingRecipe.class;
+    }
+
     @Nullable
     @Override
-    public IRecipeTransferError transferRecipe(ContainerTerminalStorageBase container, IRecipeLayout recipeLayout,
-                                               PlayerEntity player, boolean maxTransfer, boolean doTransfer) {
-        if (!recipeLayout.getRecipeCategory().getUid().equals(VanillaRecipeCategoryUid.CRAFTING)) {
-            return new TransferError();
-        }
-
+    public IRecipeTransferError transferRecipe(ContainerTerminalStorageBase container, CraftingRecipe recipe, IRecipeLayout recipeLayout,
+                                               Player player, boolean maxTransfer, boolean doTransfer) {
         if (Objects.equals(container.getSelectedTab(), TerminalStorageTabIngredientComponentItemStackCrafting.NAME.toString())) {
             ITerminalStorageTabCommon tabCommon = container.getTabCommon(container.getSelectedTab());
             TerminalStorageTabIngredientComponentItemStackCraftingCommon tabCommonCrafting =
@@ -79,7 +83,7 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
 
                 // Build player inventory index
                 IIngredientCollectionMutable<ItemStack, Integer> hayStackPlayer = new IngredientCollectionPrototypeMap<>(IngredientComponent.ITEMSTACK);
-                hayStackPlayer.addAll(player.inventory.items);
+                hayStackPlayer.addAll(player.getInventory().items);
 
                 // Build local client view of storage
                 TerminalStorageTabIngredientComponentClient tabClient = (TerminalStorageTabIngredientComponentClient)
@@ -133,14 +137,14 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
                 }
 
                 if (!slotsMissingItems.isEmpty()) {
-                    String message = Translator.translateToLocal("jei.tooltip.error.recipe.transfer.missing");
+                    Component message = new TranslatableComponent("jei.tooltip.error.recipe.transfer.missing");
                     return recipeTransferHandlerHelper.createUserErrorForSlots(message, slotsMissingItems);
                 }
 
                 return null;
             } else {
                 IngredientComponentStorageWrapperHandlerItemStack.ComponentStorageWrapper playerInventory =
-                        new IngredientComponentStorageWrapperHandlerItemStack.ComponentStorageWrapper(IngredientComponent.ITEMSTACK, new InvWrapper(player.inventory));
+                        new IngredientComponentStorageWrapperHandlerItemStack.ComponentStorageWrapper(IngredientComponent.ITEMSTACK, new InvWrapper(player.getInventory()));
 
                 // Send a packet to the server if the recipe effectively needs to be applied to the grid
                 Map<Integer, Pair<ItemStack, Integer>> slottedIngredientsFromPlayer = Maps.newHashMap();
@@ -200,7 +204,7 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
         }
 
         @Override
-        public void showError(MatrixStack matrixStack, int i, int i1, IRecipeLayout iRecipeLayout, int i2, int i3) {
+        public void showError(PoseStack matrixStack, int i, int i1, IRecipeLayout iRecipeLayout, int i2, int i3) {
             // Silently fail
         }
     }
