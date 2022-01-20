@@ -23,7 +23,7 @@ public class TerminalStorageGuiHandler implements IGuiContainerHandler<Container
                 ITerminalStorageTabClient<?> tab = tabOptional.get();
                 if (tab instanceof TerminalStorageTabIngredientComponentClient) {
                     return ((TerminalStorageTabIngredientComponentClient) tab).getSlotInstance(
-                            guiContainer.getContainer().getSelectedChannel(), slotIndex).orElse(null);
+                            guiContainer.getMenu().getSelectedChannel(), slotIndex).orElse(null);
                 }
             }
         }

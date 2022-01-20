@@ -34,6 +34,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import mezz.jei.api.recipe.transfer.IRecipeTransferError.Type;
+
 /**
  * Handles recipe clicking from JEI.
  * @author rubensworks
@@ -71,13 +73,13 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
 
                 // Build crafting grid index
                 IIngredientCollectionMutable<ItemStack, Integer> hayStackCraftingGrid = new IngredientCollectionPrototypeMap<>(IngredientComponent.ITEMSTACK);
-                for (int slot = 0; slot < tabCommonCrafting.getInventoryCrafting().getSizeInventory(); slot++) {
-                    hayStackCraftingGrid.add(tabCommonCrafting.getInventoryCrafting().getStackInSlot(slot));
+                for (int slot = 0; slot < tabCommonCrafting.getInventoryCrafting().getContainerSize(); slot++) {
+                    hayStackCraftingGrid.add(tabCommonCrafting.getInventoryCrafting().getItem(slot));
                 }
 
                 // Build player inventory index
                 IIngredientCollectionMutable<ItemStack, Integer> hayStackPlayer = new IngredientCollectionPrototypeMap<>(IngredientComponent.ITEMSTACK);
-                hayStackPlayer.addAll(player.inventory.mainInventory);
+                hayStackPlayer.addAll(player.inventory.items);
 
                 // Build local client view of storage
                 TerminalStorageTabIngredientComponentClient tabClient = (TerminalStorageTabIngredientComponentClient)
@@ -143,7 +145,7 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
                 // Send a packet to the server if the recipe effectively needs to be applied to the grid
                 Map<Integer, Pair<ItemStack, Integer>> slottedIngredientsFromPlayer = Maps.newHashMap();
                 Map<Integer, List<Pair<ItemStack, Integer>>> slottedIngredientsFromStorage = Maps.newHashMap();
-                int slotOffset = tabCommonCrafting.getSlotCrafting().slotNumber;
+                int slotOffset = tabCommonCrafting.getSlotCrafting().index;
                 for (Map.Entry<Integer, ? extends IGuiIngredient<ItemStack>> entry : recipeLayout.getItemStacks().getGuiIngredients().entrySet()) {
                     IGuiIngredient<ItemStack> ingredient = entry.getValue();
                     if (ingredient != null && ingredient.isInput()) {
@@ -161,7 +163,7 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
                                 // Move from player to crafting grid
                                 ItemStack extracted = playerInventory.extract(itemStack, matchCondition, false);
                                 Slot slot = container.getSlot(slotId + slotOffset);
-                                slot.putStack(extracted);
+                                slot.set(extracted);
 
                                 // Do the exact same thing server-side
                                 slottedIngredientsFromPlayer.put(slotId, Pair.of(itemStack, JEIIntegratedTerminalsConfig.getItemStackMatchCondition(itemStack)));

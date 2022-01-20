@@ -64,7 +64,7 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
         output.writeInt(slottedIngredientsFromPlayer.size());
         for (Map.Entry<Integer, Pair<ItemStack, Integer>> entry : slottedIngredientsFromPlayer.entrySet()) {
             output.writeInt(entry.getKey());
-            output.writeItemStack(entry.getValue().getLeft());
+            output.writeItem(entry.getValue().getLeft());
             output.writeInt(entry.getValue().getRight());
         }
 
@@ -73,7 +73,7 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
             output.writeInt(entry.getKey());
             output.writeInt(entry.getValue().size());
             for (Pair<ItemStack, Integer> subEntry : entry.getValue()) {
-                output.writeItemStack(subEntry.getLeft());
+                output.writeItem(subEntry.getLeft());
                 output.writeInt(subEntry.getRight());
             }
         }
@@ -87,7 +87,7 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
         int entriesSlottedIngredientsFromPlayer = input.readInt();
         this.slottedIngredientsFromPlayer = Maps.newHashMap();
         for (int i = 0; i < entriesSlottedIngredientsFromPlayer; i++) {
-            this.slottedIngredientsFromPlayer.put(input.readInt(), Pair.of(input.readItemStack(), input.readInt()));
+            this.slottedIngredientsFromPlayer.put(input.readInt(), Pair.of(input.readItem(), input.readInt()));
         }
 
         int entriesSlottedIngredientsFromStorage = input.readInt();
@@ -97,7 +97,7 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
             int entries = input.readInt();
             List<Pair<ItemStack, Integer>> alternatives = Lists.newArrayListWithExpectedSize(entries);
             for (int j = 0; j < entries; j++) {
-                alternatives.add(Pair.of(input.readItemStack(), input.readInt()));
+                alternatives.add(Pair.of(input.readItem(), input.readInt()));
             }
             this.slottedIngredientsFromStorage.put(key, alternatives);
         }
@@ -116,15 +116,15 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
 
     @Override
     public void actionServer(World world, ServerPlayerEntity player) {
-        if(player.openContainer instanceof ContainerTerminalStorageBase) {
-            ContainerTerminalStorageBase<?> container = ((ContainerTerminalStorageBase<?>) player.openContainer);
+        if(player.containerMenu instanceof ContainerTerminalStorageBase) {
+            ContainerTerminalStorageBase<?> container = ((ContainerTerminalStorageBase<?>) player.containerMenu);
             ITerminalStorageTabCommon tabCommon = container.getTabCommon(tabId);
             if (tabCommon instanceof TerminalStorageTabIngredientComponentItemStackCraftingCommon) {
                 TerminalStorageTabIngredientComponentServer<ItemStack, Integer> tabServerCrafting =
                         (TerminalStorageTabIngredientComponentServer<ItemStack, Integer>) container.getTabServer(tabId);
                 TerminalStorageTabIngredientComponentItemStackCraftingCommon tabCommonCrafting =
                         (TerminalStorageTabIngredientComponentItemStackCraftingCommon) tabCommon;
-                int slotOffset = tabCommonCrafting.getSlotCrafting().slotNumber;
+                int slotOffset = tabCommonCrafting.getSlotCrafting().index;
 
                 // Clear current grid into storage
                 TerminalStorageIngredientItemStackCraftingGridClear.clearGrid(tabCommonCrafting, tabServerCrafting,
@@ -139,7 +139,7 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
                     Integer matchCondition = entry.getValue().getRight();
                     ItemStack extracted = playerInventory.extract(entry.getValue().getLeft(), matchCondition, false);
                     Slot slot = container.getSlot(entry.getKey() + slotOffset);
-                    slot.putStack(extracted);
+                    slot.set(extracted);
                 }
 
                 // Fill from storage
@@ -149,7 +149,7 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
                     int slotId = entry.getKey() + slotOffset;
                     Slot slot = container.getSlot(slotId);
 
-                    if (!slot.getHasStack()) {
+                    if (!slot.hasItem()) {
                         ItemStack extracted = ItemStack.EMPTY;
                         for (Pair<ItemStack, Integer> stackEntry : entry.getValue()) {
                             int matchCondition = stackEntry.getRight();
@@ -159,7 +159,7 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
                             }
                         }
                         if (!extracted.isEmpty()) {
-                            slot.putStack(extracted);
+                            slot.set(extracted);
                         }
                     }
                 }

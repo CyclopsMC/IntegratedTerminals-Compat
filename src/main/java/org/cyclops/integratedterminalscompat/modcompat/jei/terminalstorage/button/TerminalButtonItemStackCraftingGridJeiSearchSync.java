@@ -82,7 +82,7 @@ public class TerminalButtonItemStackCraftingGridJeiSearchSync
         lines.add(new TranslationTextComponent("gui.integratedterminalscompat.terminal_storage.craftinggrid.jeisync.info"));
         lines.add(new TranslationTextComponent(
                 active ? "general.cyclopscore.info.enabled" : "general.cyclopscore.info.disabled")
-                .mergeStyle(TextFormatting.ITALIC));
+                .withStyle(TextFormatting.ITALIC));
     }
 
     public boolean isActive() {

@@ -128,8 +128,8 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
                 gui.getSelectedClientTab().ifPresent(tab -> {
                     if (isSearchSynced(tab)) {
                         WidgetTextFieldExtended fieldSearch = gui.getFieldSearch();
-                        fieldSearch.setText(jeiRuntime.getIngredientFilter().getFilterText());
-                        tab.setInstanceFilter(gui.getContainer().getSelectedChannel(), fieldSearch.getText() + "");
+                        fieldSearch.setValue(jeiRuntime.getIngredientFilter().getFilterText());
+                        tab.setInstanceFilter(gui.getMenu().getSelectedChannel(), fieldSearch.getValue() + "");
                     }
                 });
             }
