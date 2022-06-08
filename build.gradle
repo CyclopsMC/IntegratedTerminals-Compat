@@ -85,6 +85,10 @@ repositories {
         name 'DVS1 Maven FS'
         url 'https://dvs1.progwml6.com/files/maven/'
     }
+    maven {
+        name "Curios"
+        url "https://maven.theillusivec4.top/"
+    }
 }
 
 dependencies {
@@ -132,6 +136,9 @@ dependencies {
     modLib "com.google.re2j:re2j:1.1"
 
     implementation fg.deobf("mezz.jei:jei-${project.jei_version}") // https://dvs1.progwml6.com/jenkins/
+
+    runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:${project.curios_version}") // https://maven.theillusivec4.top/top/theillusivec4/curios/curios-forge/
+    compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:${project.curios_version}:api")
 }
 
 minecraft {

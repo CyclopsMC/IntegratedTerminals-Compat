@@ -7,8 +7,10 @@ import net.minecraftforge.fml.common.Mod;
 import org.apache.logging.log4j.Level;
 import org.cyclops.cyclopscore.config.ConfigHandler;
 import org.cyclops.cyclopscore.init.ModBaseVersionable;
+import org.cyclops.cyclopscore.modcompat.ModCompatLoader;
 import org.cyclops.cyclopscore.proxy.IClientProxy;
 import org.cyclops.cyclopscore.proxy.ICommonProxy;
+import org.cyclops.integratedterminalscompat.modcompat.curios.CuriosCompat;
 import org.cyclops.integratedterminalscompat.proxy.ClientProxy;
 import org.cyclops.integratedterminalscompat.proxy.CommonProxy;
 
@@ -24,6 +26,14 @@ public class IntegratedTerminalsCompat extends ModBaseVersionable<IntegratedTerm
 
     public IntegratedTerminalsCompat() {
         super(Reference.MOD_ID, (instance) -> _instance = instance);
+    }
+
+    @Override
+    protected void loadModCompats(ModCompatLoader modCompatLoader) {
+        super.loadModCompats(modCompatLoader);
+
+        // Mod compats
+        modCompatLoader.addModCompat(new CuriosCompat());
     }
 
     @Override
