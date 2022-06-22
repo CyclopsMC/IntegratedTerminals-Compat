@@ -1,11 +1,10 @@
 package org.cyclops.integratedterminalscompat.modcompat.jei.terminalstorage.button;
 
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.cyclops.cyclopscore.client.gui.component.button.ButtonImage;
@@ -55,7 +54,7 @@ public class TerminalButtonItemStackCraftingGridJeiSearchSync
     @OnlyIn(Dist.CLIENT)
     public ButtonImage createButton(int x, int y) {
         return new ButtonImage(x, y,
-                new TranslatableComponent("gui.integratedterminalscompat.terminal_storage.craftinggrid.jeisync"),
+                Component.translatable("gui.integratedterminalscompat.terminal_storage.craftinggrid.jeisync"),
                 (b) -> {},
                 active ? Images.BUTTON_BACKGROUND_ACTIVE : Images.BUTTON_BACKGROUND_INACTIVE,
                 Images.BUTTON_MIDDLE_JEI_SYNC);
@@ -78,8 +77,8 @@ public class TerminalButtonItemStackCraftingGridJeiSearchSync
     @Override
     @OnlyIn(Dist.CLIENT)
     public void getTooltip(Player player, TooltipFlag tooltipFlag, List<Component> lines) {
-        lines.add(new TranslatableComponent("gui.integratedterminalscompat.terminal_storage.craftinggrid.jeisync.info"));
-        lines.add(new TranslatableComponent(
+        lines.add(Component.translatable("gui.integratedterminalscompat.terminal_storage.craftinggrid.jeisync.info"));
+        lines.add(Component.translatable(
                 active ? "general.cyclopscore.info.enabled" : "general.cyclopscore.info.disabled")
                 .withStyle(ChatFormatting.ITALIC));
     }

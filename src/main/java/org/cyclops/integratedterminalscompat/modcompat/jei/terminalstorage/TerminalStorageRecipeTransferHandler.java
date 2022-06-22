@@ -3,14 +3,19 @@ package org.cyclops.integratedterminalscompat.modcompat.jei.terminalstorage;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mojang.blaze3d.vertex.PoseStack;
-import mezz.jei.api.gui.IRecipeLayout;
-import mezz.jei.api.gui.ingredient.IGuiIngredient;
+import mezz.jei.api.constants.RecipeTypes;
+import mezz.jei.api.constants.VanillaTypes;
+import mezz.jei.api.gui.ingredient.IRecipeSlotView;
+import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
+import mezz.jei.api.ingredients.ITypedIngredient;
+import mezz.jei.api.recipe.RecipeIngredientRole;
+import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandlerHelper;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
@@ -33,9 +38,10 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
-
-import mezz.jei.api.recipe.transfer.IRecipeTransferError.Type;
+import java.util.stream.Stream;
 
 /**
  * Handles recipe clicking from JEI.
@@ -45,10 +51,12 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
 
     private final IRecipeTransferHandlerHelper recipeTransferHandlerHelper;
     private final Class<T> clazz;
+    private final MenuType<T> menuType;
 
-    public TerminalStorageRecipeTransferHandler(IRecipeTransferHandlerHelper recipeTransferHandlerHelper, Class<T> clazz) {
+    public TerminalStorageRecipeTransferHandler(IRecipeTransferHandlerHelper recipeTransferHandlerHelper, Class<T> clazz, MenuType<T> menuType) {
         this.recipeTransferHandlerHelper = recipeTransferHandlerHelper;
         this.clazz = clazz;
+        this.menuType = menuType;
     }
 
     @Override
@@ -57,13 +65,18 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
     }
 
     @Override
-    public Class<CraftingRecipe> getRecipeClass() {
-        return CraftingRecipe.class;
+    public Optional<MenuType<T>> getMenuType() {
+        return Optional.of(this.menuType);
+    }
+
+    @Override
+    public RecipeType<CraftingRecipe> getRecipeType() {
+        return RecipeTypes.CRAFTING;
     }
 
     @Nullable
     @Override
-    public IRecipeTransferError transferRecipe(ContainerTerminalStorageBase container, CraftingRecipe recipe, IRecipeLayout recipeLayout,
+    public IRecipeTransferError transferRecipe(T container, CraftingRecipe recipe, IRecipeSlotsView recipeLayout,
                                                Player player, boolean maxTransfer, boolean doTransfer) {
         if (Objects.equals(container.getSelectedTab(), TerminalStorageTabIngredientComponentItemStackCrafting.NAME.toString())) {
             ITerminalStorageTabCommon tabCommon = container.getTabCommon(container.getSelectedTab());
@@ -95,14 +108,15 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
                         .map(TerminalStorageTabIngredientComponentClient.InstanceWithMetadata::getInstance)
                         .collect(Collectors.toList()));
 
-                List<Integer> slotsMissingItems = Lists.newArrayList();
-                for (Map.Entry<Integer, ? extends IGuiIngredient<ItemStack>> entry : recipeLayout.getItemStacks().getGuiIngredients().entrySet()) {
-                    IGuiIngredient<ItemStack> ingredient = entry.getValue();
-                    if (ingredient != null && ingredient.isInput()) {
-                        int slot = entry.getKey();
-                        if (!ingredient.getAllIngredients().isEmpty()) {
+                List<IRecipeSlotView> slotsMissingItems = Lists.newArrayList();
+                for (IRecipeSlotView slotView : recipeLayout.getSlotViews()) {
+                    if (!slotView.isEmpty() && slotView.getRole() == RecipeIngredientRole.INPUT) {
+                        ITypedIngredient<?> typedIngredient = slotView.getAllIngredients().findFirst().get();
+                        if (typedIngredient.getType() == VanillaTypes.ITEM_STACK) {
                             boolean found = false;
-                            for (ItemStack itemStack : ingredient.getAllIngredients()) {
+                            for (ItemStack itemStack : ((Stream<ITypedIngredient<ItemStack>>) (Stream) slotView.getAllIngredients())
+                                    .map(ITypedIngredient::getIngredient)
+                                    .collect(Collectors.toSet())) {
                                 int matchCondition = JEIIntegratedTerminalsConfig.getItemStackMatchCondition(itemStack);
 
                                 // First check in the crafting grid
@@ -127,16 +141,15 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
                                 }
                             }
                             if (!found) {
-                                slotsMissingItems.add(slot);
+                                slotsMissingItems.add(slotView);
                             }
-
                         }
                     }
                 }
 
                 if (!slotsMissingItems.isEmpty()) {
-                    Component message = new TranslatableComponent("jei.tooltip.error.recipe.transfer.missing");
-                    return recipeTransferHandlerHelper.createUserErrorForSlots(message, slotsMissingItems);
+                    Component message = Component.translatable("jei.tooltip.error.recipe.transfer.missing");
+                    return recipeTransferHandlerHelper.createUserErrorForMissingSlots(message, slotsMissingItems);
                 }
 
                 return null;
@@ -148,40 +161,46 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
                 Map<Integer, Pair<ItemStack, Integer>> slottedIngredientsFromPlayer = Maps.newHashMap();
                 Map<Integer, List<Pair<ItemStack, Integer>>> slottedIngredientsFromStorage = Maps.newHashMap();
                 int slotOffset = tabCommonCrafting.getSlotCrafting().index;
-                for (Map.Entry<Integer, ? extends IGuiIngredient<ItemStack>> entry : recipeLayout.getItemStacks().getGuiIngredients().entrySet()) {
-                    IGuiIngredient<ItemStack> ingredient = entry.getValue();
-                    if (ingredient != null && ingredient.isInput()) {
-                        int slotId = entry.getKey();
-                        boolean found = false;
+                int slotId = 0;
+                for (IRecipeSlotView slotView : recipeLayout.getSlotViews()) {
+                    if (!slotView.isEmpty() && slotView.getRole() == RecipeIngredientRole.INPUT) {
+                        ITypedIngredient<?> typedIngredient = slotView.getAllIngredients().findFirst().get();
+                        if (typedIngredient.getType() == VanillaTypes.ITEM_STACK) {
+                            boolean found = false;
 
-                        // First check if we can transfer from the player inventory
-                        // No need to check the crafting grid, as the server will first clear the grid into the storage in TerminalStorageIngredientItemStackCraftingGridSetRecipe
-                        for (ItemStack itemStack : ingredient.getAllIngredients()) {
-                            int matchCondition = JEIIntegratedTerminalsConfig.getItemStackMatchCondition(itemStack);
+                            // First check if we can transfer from the player inventory
+                            // No need to check the crafting grid, as the server will first clear the grid into the storage in TerminalStorageIngredientItemStackCraftingGridSetRecipe
+                            Set<ItemStack> allIngredients = ((Stream<ITypedIngredient<ItemStack>>) (Stream) slotView.getAllIngredients())
+                                    .map(ITypedIngredient::getIngredient)
+                                    .collect(Collectors.toSet());
+                            for (ItemStack itemStack : allIngredients) {
+                                int matchCondition = JEIIntegratedTerminalsConfig.getItemStackMatchCondition(itemStack);
 
-                            if (!playerInventory.extract(itemStack, matchCondition, true).isEmpty()) {
-                                found = true;
+                                if (!playerInventory.extract(itemStack, matchCondition, true).isEmpty()) {
+                                    found = true;
 
-                                // Move from player to crafting grid
-                                ItemStack extracted = playerInventory.extract(itemStack, matchCondition, false);
-                                Slot slot = container.getSlot(slotId + slotOffset);
-                                slot.set(extracted);
+                                    // Move from player to crafting grid
+                                    ItemStack extracted = playerInventory.extract(itemStack, matchCondition, false);
+                                    Slot slot = container.getSlot(slotId + slotOffset);
+                                    slot.set(extracted);
 
-                                // Do the exact same thing server-side
-                                slottedIngredientsFromPlayer.put(slotId, Pair.of(itemStack, JEIIntegratedTerminalsConfig.getItemStackMatchCondition(itemStack)));
+                                    // Do the exact same thing server-side
+                                    slottedIngredientsFromPlayer.put(slotId, Pair.of(itemStack, JEIIntegratedTerminalsConfig.getItemStackMatchCondition(itemStack)));
 
-                                break;
+                                    break;
+                                }
+                            }
+
+                            if (!found) {
+                                // Otherwise, request them from the storage
+                                slottedIngredientsFromStorage.put(slotId, allIngredients
+                                        .stream()
+                                        .map(itemStack -> Pair.of(itemStack, JEIIntegratedTerminalsConfig.getItemStackMatchCondition(itemStack)))
+                                        .collect(Collectors.toList()));
                             }
                         }
-
-                        if (!found) {
-                            // Otherwise, request them from the storage
-                            slottedIngredientsFromStorage.put(slotId, ingredient.getAllIngredients()
-                                    .stream()
-                                    .map(itemStack -> Pair.of(itemStack, JEIIntegratedTerminalsConfig.getItemStackMatchCondition(itemStack)))
-                                    .collect(Collectors.toList()));
-                        }
                     }
+                    slotId++;
                 }
 
                 IntegratedTerminalsCompat._instance.getPacketHandler().sendToServer(
@@ -202,7 +221,7 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
         }
 
         @Override
-        public void showError(PoseStack matrixStack, int i, int i1, IRecipeLayout iRecipeLayout, int i2, int i3) {
+        public void showError(PoseStack poseStack, int mouseX, int mouseY, IRecipeSlotsView recipeSlotsView, int recipeX, int recipeY) {
             // Silently fail
         }
     }

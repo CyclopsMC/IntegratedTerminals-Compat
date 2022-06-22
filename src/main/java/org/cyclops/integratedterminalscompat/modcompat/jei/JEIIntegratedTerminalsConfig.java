@@ -2,7 +2,8 @@ package org.cyclops.integratedterminalscompat.modcompat.jei;
 
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
-import mezz.jei.api.constants.VanillaRecipeCategoryUid;
+import mezz.jei.api.constants.RecipeTypes;
+import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.ingredients.subtypes.ISubtypeManager;
 import mezz.jei.api.ingredients.subtypes.UidContext;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
@@ -17,6 +18,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.cyclops.commoncapabilities.api.capability.itemhandler.ItemMatch;
 import org.cyclops.cyclopscore.client.gui.component.input.WidgetTextFieldExtended;
+import org.cyclops.integratedterminals.RegistryEntries;
 import org.cyclops.integratedterminals.api.terminalstorage.ITerminalButton;
 import org.cyclops.integratedterminals.api.terminalstorage.ITerminalStorageTabClient;
 import org.cyclops.integratedterminals.api.terminalstorage.event.TerminalStorageTabClientLoadButtonsEvent;
@@ -53,7 +55,7 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
         // but just using the heuristic that the existence of sub type info implies NBT matching seems to work out so far.
         // So if we would run into problems with this, this filtering is what we'd need to do.
 
-        String subTypeInfo = JEIIntegratedTerminalsConfig.subTypeManager.getSubtypeInfo(itemStack, UidContext.Ingredient);
+        String subTypeInfo = JEIIntegratedTerminalsConfig.subTypeManager.getSubtypeInfo(VanillaTypes.ITEM_STACK, itemStack, UidContext.Ingredient);
         return subTypeInfo == null ? ItemMatch.ITEM : ItemMatch.ITEM | ItemMatch.TAG;
     }
 
@@ -65,9 +67,11 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
     @Override
     public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
         registration.addUniversalRecipeTransferHandler(
-                new TerminalStorageRecipeTransferHandler<>(registration.getTransferHelper(), ContainerTerminalStoragePart.class));
+                new TerminalStorageRecipeTransferHandler<>(registration.getTransferHelper(),
+                        ContainerTerminalStoragePart.class, RegistryEntries.CONTAINER_PART_TERMINAL_STORAGE_PART));
         registration.addUniversalRecipeTransferHandler(
-                new TerminalStorageRecipeTransferHandler<>(registration.getTransferHelper(), ContainerTerminalStorageItem.class));
+                new TerminalStorageRecipeTransferHandler<>(registration.getTransferHelper(),
+                        ContainerTerminalStorageItem.class, RegistryEntries.CONTAINER_PART_TERMINAL_STORAGE_ITEM));
     }
 
     @Override
@@ -80,7 +84,7 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
 
     @Override
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
-        registration.addRecipeCatalyst(new ItemStack(PartTypes.TERMINAL_STORAGE.getItem()), VanillaRecipeCategoryUid.CRAFTING);
+        registration.addRecipeCatalyst(new ItemStack(PartTypes.TERMINAL_STORAGE.getItem()), RecipeTypes.CRAFTING);
     }
 
     @Override
