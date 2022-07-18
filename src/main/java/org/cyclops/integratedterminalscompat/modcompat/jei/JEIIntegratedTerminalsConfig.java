@@ -124,7 +124,7 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
     }
 
     @SubscribeEvent
-    public void onKeyTyped(ScreenEvent.KeyboardKeyReleasedEvent.Post event) {
+    public void onKeyTyped(ScreenEvent.KeyReleased.Post event) {
         // Copy the JEI search box contents into the terminal search box.
         if (event.getScreen() instanceof ContainerScreenTerminalStorage) {
             ContainerScreenTerminalStorage<?, ?> gui = ((ContainerScreenTerminalStorage<?, ?>) event.getScreen());
