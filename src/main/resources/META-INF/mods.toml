@@ -21,7 +21,7 @@ Integrated Terminals compatibility with other mods. This mod is automatically pa
 [[dependencies.integratedterminalscompat]]
     modId="integrateddynamics"
     mandatory=true
-    versionRange="[1.11.4,)"
+    versionRange="[1.11.8,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.integratedterminalscompat]]
