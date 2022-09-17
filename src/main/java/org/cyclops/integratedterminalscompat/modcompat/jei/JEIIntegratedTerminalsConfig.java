@@ -40,7 +40,7 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
 
     public static ISubtypeManager subTypeManager;
 
-    private IJeiRuntime jeiRuntime;
+    public static IJeiRuntime jeiRuntime;
 
     public JEIIntegratedTerminalsConfig() {
         MinecraftForge.EVENT_BUS.register(this);
