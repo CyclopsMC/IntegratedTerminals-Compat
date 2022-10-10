@@ -78,7 +78,7 @@ public class TerminalButtonItemStackCraftingGridJeiSearchSync
     @Override
     @OnlyIn(Dist.CLIENT)
     public void getTooltip(Player player, TooltipFlag tooltipFlag, List<Component> lines) {
-        lines.add(new TranslatableComponent("gui.integratedterminalscompat.terminal_storage.craftinggrid.jeisync.info"));
+        lines.add(new TranslatableComponent("gui.integratedterminalscompat.terminal_storage.craftinggrid.jeisync.info").withStyle(ChatFormatting.GRAY));
         lines.add(new TranslatableComponent(
                 active ? "general.cyclopscore.info.enabled" : "general.cyclopscore.info.disabled")
                 .withStyle(ChatFormatting.ITALIC));
