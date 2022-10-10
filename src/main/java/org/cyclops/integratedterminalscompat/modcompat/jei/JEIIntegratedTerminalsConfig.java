@@ -11,6 +11,9 @@ import mezz.jei.api.registration.IModIngredientRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeTransferRegistration;
 import mezz.jei.api.runtime.IJeiRuntime;
+import mezz.jei.common.gui.overlay.IngredientListOverlay;
+import mezz.jei.common.gui.overlay.bookmarks.BookmarkOverlay;
+import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.event.ScreenEvent;
@@ -21,6 +24,7 @@ import org.cyclops.cyclopscore.client.gui.component.input.WidgetTextFieldExtende
 import org.cyclops.integratedterminals.RegistryEntries;
 import org.cyclops.integratedterminals.api.terminalstorage.ITerminalButton;
 import org.cyclops.integratedterminals.api.terminalstorage.ITerminalStorageTabClient;
+import org.cyclops.integratedterminals.api.terminalstorage.event.TerminalStorageScreenSizeEvent;
 import org.cyclops.integratedterminals.api.terminalstorage.event.TerminalStorageTabClientLoadButtonsEvent;
 import org.cyclops.integratedterminals.api.terminalstorage.event.TerminalStorageTabClientSearchFieldUpdateEvent;
 import org.cyclops.integratedterminals.client.gui.container.ContainerScreenTerminalStorage;
@@ -43,6 +47,8 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
     public static ISubtypeManager subTypeManager;
 
     public static IJeiRuntime jeiRuntime;
+
+    private boolean wasJeiVisible = false;
 
     public JEIIntegratedTerminalsConfig() {
         MinecraftForge.EVENT_BUS.register(this);
@@ -103,6 +109,23 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
                 .anyMatch((button) -> button instanceof TerminalButtonItemStackCraftingGridJeiSearchSync)) {
             event.getButtons().add(new TerminalButtonItemStackCraftingGridJeiSearchSync(
                     event.getContainer().getGuiState(), event.getClientTab()));
+        }
+    }
+
+    @SubscribeEvent
+    public void onTerminalStorageScreenSize(TerminalStorageScreenSizeEvent event) {
+        boolean isOpen = ((IngredientListOverlay) jeiRuntime.getIngredientListOverlay()).isListDisplayed() || ((BookmarkOverlay) jeiRuntime.getBookmarkOverlay()).isListDisplayed();
+        boolean wasJeiVisiblePrevious = wasJeiVisible;
+        if (isOpen) {
+            wasJeiVisible = true;
+            event.setWidth(event.getWidth() - 180);
+        } else {
+            wasJeiVisible = false;
+        }
+
+        // Re-init screen if JEI was just made (in)visible
+        if (wasJeiVisiblePrevious != wasJeiVisible) {
+            ((ContainerScreenTerminalStorage) Minecraft.getInstance().screen).init();
         }
     }
 
