@@ -110,7 +110,12 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
 
     @SubscribeEvent
     public void onTerminalStorageScreenSize(TerminalStorageScreenSizeEvent event) {
-        boolean isOpen = ((IngredientListOverlay) jeiRuntime.getIngredientListOverlay()).isListDisplayed() || ((BookmarkOverlay) jeiRuntime.getBookmarkOverlay()).isListDisplayed();
+        boolean isOpen = true;
+        try {
+            isOpen = ((IngredientListOverlay) jeiRuntime.getIngredientListOverlay()).isListDisplayed() || ((BookmarkOverlay) jeiRuntime.getBookmarkOverlay()).isListDisplayed();
+        } catch (NoClassDefFoundError e) {
+            // Ignore errors
+        }
         boolean wasJeiVisiblePrevious = wasJeiVisible;
         if (isOpen) {
             wasJeiVisible = true;
