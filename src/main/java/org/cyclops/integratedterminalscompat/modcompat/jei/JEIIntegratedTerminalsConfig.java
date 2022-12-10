@@ -11,7 +11,6 @@ import mezz.jei.api.registration.IModIngredientRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeTransferRegistration;
 import mezz.jei.api.runtime.IJeiRuntime;
-import mezz.jei.common.gui.overlay.IngredientListOverlay;
 import mezz.jei.common.gui.overlay.bookmarks.BookmarkOverlay;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
@@ -114,18 +113,22 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
 
     @SubscribeEvent
     public void onTerminalStorageScreenSize(TerminalStorageScreenSizeEvent event) {
-        boolean isOpen = ((IngredientListOverlay) jeiRuntime.getIngredientListOverlay()).isListDisplayed() || ((BookmarkOverlay) jeiRuntime.getBookmarkOverlay()).isListDisplayed();
-        boolean wasJeiVisiblePrevious = wasJeiVisible;
-        if (isOpen) {
-            wasJeiVisible = true;
-            event.setWidth(event.getWidth() - 180);
-        } else {
-            wasJeiVisible = false;
-        }
+        try {
+            boolean isOpen = jeiRuntime.getIngredientListOverlay().isListDisplayed() || ((BookmarkOverlay) jeiRuntime.getBookmarkOverlay()).isListDisplayed();
+            boolean wasJeiVisiblePrevious = wasJeiVisible;
+            if (isOpen) {
+                wasJeiVisible = true;
+                event.setWidth(event.getWidth() - 180);
+            } else {
+                wasJeiVisible = false;
+            }
 
-        // Re-init screen if JEI was just made (in)visible
-        if (wasJeiVisiblePrevious != wasJeiVisible) {
-            ((ContainerScreenTerminalStorage) Minecraft.getInstance().screen).init();
+            // Re-init screen if JEI was just made (in)visible
+            if (wasJeiVisiblePrevious != wasJeiVisible) {
+                ((ContainerScreenTerminalStorage) Minecraft.getInstance().screen).init();
+            }
+        } catch (NoClassDefFoundError e) {
+            // Do nothing when we detect some JEI API issues
         }
     }
 
