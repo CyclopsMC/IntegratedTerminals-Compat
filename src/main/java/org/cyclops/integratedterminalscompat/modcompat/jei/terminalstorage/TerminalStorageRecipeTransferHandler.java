@@ -120,21 +120,21 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
                                 int matchCondition = JEIIntegratedTerminalsConfig.getItemStackMatchCondition(itemStack);
 
                                 // First check in the crafting grid
-                                if (hayStackCraftingGrid.contains(itemStack, matchCondition)) {
+                                if (hayStackCraftingGrid.count(itemStack, matchCondition) > 0) {
                                     hayStackPlayer.remove(itemStack);
                                     found = true;
                                     break;
                                 }
 
                                 // Then check in player inventory
-                                if (hayStackPlayer.contains(itemStack, matchCondition)) {
+                                if (hayStackPlayer.count(itemStack, matchCondition) > 0) {
                                     hayStackPlayer.remove(itemStack);
                                     found = true;
                                     break;
                                 }
 
                                 // Then check the storage
-                                if (hayStack.contains(itemStack, matchCondition)) {
+                                if (hayStack.count(itemStack, matchCondition) > 0) {
                                     hayStack.remove(itemStack);
                                     found = true;
                                     break;
