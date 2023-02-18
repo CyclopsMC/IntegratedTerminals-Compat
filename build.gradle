@@ -82,8 +82,8 @@ repositories {
         }
     }
     maven {
-        name 'DVS1 Maven FS'
-        url 'https://dvs1.progwml6.com/files/maven/'
+        name 'Blame Jared'
+        url 'https://maven.blamejared.com/'
     }
     maven {
         name "Curios"

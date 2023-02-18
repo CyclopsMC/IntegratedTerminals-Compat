@@ -53,6 +53,10 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
     private final Class<T> clazz;
     private final MenuType<T> menuType;
 
+    private CraftingRecipe lastSimulatedRecipe;
+    private long previousChangeId;
+    private IRecipeTransferError lastSimulatedError;
+
     public TerminalStorageRecipeTransferHandler(IRecipeTransferHandlerHelper recipeTransferHandlerHelper, Class<T> clazz, MenuType<T> menuType) {
         this.recipeTransferHandlerHelper = recipeTransferHandlerHelper;
         this.clazz = clazz;
@@ -84,6 +88,14 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
                     (TerminalStorageTabIngredientComponentItemStackCraftingCommon) tabCommon;
 
             if (!doTransfer) {
+                TerminalStorageTabIngredientComponentClient tabClient = (TerminalStorageTabIngredientComponentClient)
+                        container.getTabClient(container.getSelectedTab());
+
+                // Since this (expensive) method is invoked every tick, we use a cache.
+                if (lastSimulatedRecipe == recipe && previousChangeId == tabClient.getLastChangeId()) {
+                    return lastSimulatedError;
+                }
+
                 // Check in the player inventory and local client view if the required recipe ingredients are available
 
                 // Build crafting grid index
@@ -97,8 +109,6 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
                 hayStackPlayer.addAll(player.getInventory().items);
 
                 // Build local client view of storage
-                TerminalStorageTabIngredientComponentClient tabClient = (TerminalStorageTabIngredientComponentClient)
-                        container.getTabClient(container.getSelectedTab());
                 List<TerminalStorageTabIngredientComponentClient.InstanceWithMetadata<ItemStack>> unfilteredIngredients = tabClient
                         .getUnfilteredIngredientsView(container.getSelectedChannel());
                 IIngredientCollectionMutable<ItemStack, Integer> hayStack = new IngredientCollectionPrototypeMap<>(IngredientComponent.ITEMSTACK);
@@ -147,12 +157,14 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
                     }
                 }
 
+                lastSimulatedRecipe = recipe;
+                previousChangeId = tabClient.getLastChangeId();
                 if (!slotsMissingItems.isEmpty()) {
                     Component message = Component.translatable("jei.tooltip.error.recipe.transfer.missing");
-                    return recipeTransferHandlerHelper.createUserErrorForMissingSlots(message, slotsMissingItems);
+                    return lastSimulatedError = recipeTransferHandlerHelper.createUserErrorForMissingSlots(message, slotsMissingItems);
                 }
 
-                return null;
+                return lastSimulatedError = null;
             } else {
                 IngredientComponentStorageWrapperHandlerItemStack.ComponentStorageWrapper playerInventory =
                         new IngredientComponentStorageWrapperHandlerItemStack.ComponentStorageWrapper(IngredientComponent.ITEMSTACK, new InvWrapper(player.getInventory()));
