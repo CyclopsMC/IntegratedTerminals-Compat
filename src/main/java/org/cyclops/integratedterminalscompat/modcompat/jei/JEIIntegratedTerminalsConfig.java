@@ -11,7 +11,7 @@ import mezz.jei.api.registration.IModIngredientRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeTransferRegistration;
 import mezz.jei.api.runtime.IJeiRuntime;
-import mezz.jei.common.gui.overlay.bookmarks.BookmarkOverlay;
+import mezz.jei.gui.overlay.bookmarks.BookmarkOverlay;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
