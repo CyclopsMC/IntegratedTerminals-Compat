@@ -24,6 +24,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.cyclops.commoncapabilities.api.ingredient.IngredientComponent;
 import org.cyclops.commoncapabilities.ingredient.storage.IngredientComponentStorageWrapperHandlerItemStack;
 import org.cyclops.cyclopscore.ingredient.collection.IIngredientCollectionMutable;
+import org.cyclops.cyclopscore.ingredient.collection.IngredientCollectionHelpers;
 import org.cyclops.cyclopscore.ingredient.collection.IngredientCollectionPrototypeMap;
 import org.cyclops.integratedterminals.api.terminalstorage.ITerminalStorageTabCommon;
 import org.cyclops.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentClient;
@@ -111,7 +112,7 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
                 // Build local client view of storage
                 List<TerminalStorageTabIngredientComponentClient.InstanceWithMetadata<ItemStack>> unfilteredIngredients = tabClient
                         .getUnfilteredIngredientsView(container.getSelectedChannel());
-                IIngredientCollectionMutable<ItemStack, Integer> hayStack = new IngredientCollectionPrototypeMap<>(IngredientComponent.ITEMSTACK);
+                IIngredientCollectionMutable<ItemStack, Integer> hayStack = IngredientCollectionHelpers.createCollapsedCollection(IngredientComponent.ITEMSTACK);
                 hayStack.addAll(unfilteredIngredients
                         .stream()
                         .filter(i -> i.getCraftingOption() == null)
