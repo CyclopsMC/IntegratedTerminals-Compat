@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -54,14 +55,15 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
     private final Class<T> clazz;
     private final MenuType<T> menuType;
 
-    private CraftingRecipe lastSimulatedRecipe;
     private long previousChangeId;
-    private IRecipeTransferError lastSimulatedError;
+    private RecipeErrorCache recipeErrorCache;
+
 
     public TerminalStorageRecipeTransferHandler(IRecipeTransferHandlerHelper recipeTransferHandlerHelper, Class<T> clazz, MenuType<T> menuType) {
         this.recipeTransferHandlerHelper = recipeTransferHandlerHelper;
         this.clazz = clazz;
         this.menuType = menuType;
+        this.recipeErrorCache = new RecipeErrorCache();
     }
 
     @Override
@@ -91,81 +93,12 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
             if (!doTransfer) {
                 TerminalStorageTabIngredientComponentClient tabClient = (TerminalStorageTabIngredientComponentClient)
                         container.getTabClient(container.getSelectedTab());
-
-                // Since this (expensive) method is invoked every tick, we use a cache.
-                if (lastSimulatedRecipe == recipe && previousChangeId == tabClient.getLastChangeId()) {
-                    return lastSimulatedError;
+                Supplier<IRecipeTransferError> missingItemsSupplier = () -> getMissingItems(container, recipe, recipeLayout, player, tabCommonCrafting);
+                if (previousChangeId != tabClient.getLastChangeId()) {
+                    // Clear cache when storage contents changed
+                    recipeErrorCache.clear();
                 }
-
-                // Check in the player inventory and local client view if the required recipe ingredients are available
-
-                // Build crafting grid index
-                IIngredientCollectionMutable<ItemStack, Integer> hayStackCraftingGrid = new IngredientCollectionPrototypeMap<>(IngredientComponent.ITEMSTACK);
-                for (int slot = 0; slot < tabCommonCrafting.getInventoryCrafting().getContainerSize(); slot++) {
-                    hayStackCraftingGrid.add(tabCommonCrafting.getInventoryCrafting().getItem(slot));
-                }
-
-                // Build player inventory index
-                IIngredientCollectionMutable<ItemStack, Integer> hayStackPlayer = new IngredientCollectionPrototypeMap<>(IngredientComponent.ITEMSTACK);
-                hayStackPlayer.addAll(player.getInventory().items);
-
-                // Build local client view of storage
-                List<TerminalStorageTabIngredientComponentClient.InstanceWithMetadata<ItemStack>> unfilteredIngredients = tabClient
-                        .getUnfilteredIngredientsView(container.getSelectedChannel());
-                IIngredientCollectionMutable<ItemStack, Integer> hayStack = IngredientCollectionHelpers.createCollapsedCollection(IngredientComponent.ITEMSTACK);
-                hayStack.addAll(unfilteredIngredients
-                        .stream()
-                        .filter(i -> i.getCraftingOption() == null)
-                        .map(TerminalStorageTabIngredientComponentClient.InstanceWithMetadata::getInstance)
-                        .collect(Collectors.toList()));
-
-                List<IRecipeSlotView> slotsMissingItems = Lists.newArrayList();
-                for (IRecipeSlotView slotView : recipeLayout.getSlotViews()) {
-                    if (!slotView.isEmpty() && slotView.getRole() == RecipeIngredientRole.INPUT) {
-                        ITypedIngredient<?> typedIngredient = slotView.getAllIngredients().findFirst().get();
-                        if (typedIngredient.getType() == VanillaTypes.ITEM_STACK) {
-                            boolean found = false;
-                            for (ItemStack itemStack : ((Stream<ITypedIngredient<ItemStack>>) (Stream) slotView.getAllIngredients())
-                                    .map(ITypedIngredient::getIngredient)
-                                    .collect(Collectors.toSet())) {
-                                int matchCondition = JEIIntegratedTerminalsConfig.getItemStackMatchCondition(itemStack);
-
-                                // First check in the crafting grid
-                                if (hayStackCraftingGrid.contains(itemStack, matchCondition)) {
-                                    hayStackPlayer.remove(itemStack);
-                                    found = true;
-                                    break;
-                                }
-
-                                // Then check in player inventory
-                                if (hayStackPlayer.contains(itemStack, matchCondition)) {
-                                    hayStackPlayer.remove(itemStack);
-                                    found = true;
-                                    break;
-                                }
-
-                                // Then check the storage
-                                if (hayStack.contains(itemStack, matchCondition)) {
-                                    hayStack.remove(itemStack);
-                                    found = true;
-                                    break;
-                                }
-                            }
-                            if (!found) {
-                                slotsMissingItems.add(slotView);
-                            }
-                        }
-                    }
-                }
-
-                lastSimulatedRecipe = recipe;
-                previousChangeId = tabClient.getLastChangeId();
-                if (!slotsMissingItems.isEmpty()) {
-                    Component message = Component.translatable("jei.tooltip.error.recipe.transfer.missing");
-                    return lastSimulatedError = recipeTransferHandlerHelper.createUserErrorForMissingSlots(message, slotsMissingItems);
-                }
-
-                return lastSimulatedError = null;
+                return recipeErrorCache.getRecipeError(recipe, missingItemsSupplier);
             } else {
                 IngredientComponentStorageWrapperHandlerItemStack.ComponentStorageWrapper playerInventory =
                         new IngredientComponentStorageWrapperHandlerItemStack.ComponentStorageWrapper(IngredientComponent.ITEMSTACK, new InvWrapper(player.getInventory()));
@@ -224,6 +157,80 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
         }
 
         return new TransferError();
+    }
+
+    private IRecipeTransferError getMissingItems(T container, CraftingRecipe recipe, IRecipeSlotsView recipeLayout, Player player, TerminalStorageTabIngredientComponentItemStackCraftingCommon tabCommonCrafting) {
+        TerminalStorageTabIngredientComponentClient tabClient = (TerminalStorageTabIngredientComponentClient)
+                container.getTabClient(container.getSelectedTab());
+
+        // Check in the player inventory and local client view if the required recipe ingredients are available
+
+        // Build crafting grid index
+        IIngredientCollectionMutable<ItemStack, Integer> hayStackCraftingGrid = new IngredientCollectionPrototypeMap<>(IngredientComponent.ITEMSTACK);
+        for (int slot = 0; slot < tabCommonCrafting.getInventoryCrafting().getContainerSize(); slot++) {
+            hayStackCraftingGrid.add(tabCommonCrafting.getInventoryCrafting().getItem(slot));
+        }
+
+        // Build player inventory index
+        IIngredientCollectionMutable<ItemStack, Integer> hayStackPlayer = new IngredientCollectionPrototypeMap<>(IngredientComponent.ITEMSTACK);
+        hayStackPlayer.addAll(player.getInventory().items);
+
+        // Build local client view of storage
+        List<TerminalStorageTabIngredientComponentClient.InstanceWithMetadata<ItemStack>> unfilteredIngredients = tabClient
+                .getUnfilteredIngredientsView(container.getSelectedChannel());
+        IIngredientCollectionMutable<ItemStack, Integer> hayStack = IngredientCollectionHelpers.createCollapsedCollection(IngredientComponent.ITEMSTACK);
+        hayStack.addAll(unfilteredIngredients
+                .stream()
+                .filter(i -> i.getCraftingOption() == null)
+                .map(TerminalStorageTabIngredientComponentClient.InstanceWithMetadata::getInstance)
+                .collect(Collectors.toList()));
+
+        List<IRecipeSlotView> slotsMissingItems = Lists.newArrayList();
+        for (IRecipeSlotView slotView : recipeLayout.getSlotViews()) {
+            if (!slotView.isEmpty() && slotView.getRole() == RecipeIngredientRole.INPUT) {
+                ITypedIngredient<?> typedIngredient = slotView.getAllIngredients().findFirst().get();
+                if (typedIngredient.getType() == VanillaTypes.ITEM_STACK) {
+                    boolean found = false;
+                    for (ItemStack itemStack : ((Stream<ITypedIngredient<ItemStack>>) (Stream) slotView.getAllIngredients())
+                            .map(ITypedIngredient::getIngredient)
+                            .collect(Collectors.toSet())) {
+                        int matchCondition = JEIIntegratedTerminalsConfig.getItemStackMatchCondition(itemStack);
+
+                        // First check in the crafting grid
+                        if (hayStackCraftingGrid.contains(itemStack, matchCondition)) {
+                            hayStackPlayer.remove(itemStack);
+                            found = true;
+                            break;
+                        }
+
+                        // Then check in player inventory
+                        if (hayStackPlayer.contains(itemStack, matchCondition)) {
+                            hayStackPlayer.remove(itemStack);
+                            found = true;
+                            break;
+                        }
+
+                        // Then check the storage
+                        if (hayStack.contains(itemStack, matchCondition)) {
+                            hayStack.remove(itemStack);
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        slotsMissingItems.add(slotView);
+                    }
+                }
+            }
+        }
+
+        previousChangeId = tabClient.getLastChangeId();
+        if (!slotsMissingItems.isEmpty()) {
+            Component message = Component.translatable("jei.tooltip.error.recipe.transfer.missing");
+            return recipeTransferHandlerHelper.createUserErrorForMissingSlots(message, slotsMissingItems);
+        }
+
+        return null;
     }
 
     public static class TransferError implements IRecipeTransferError {
