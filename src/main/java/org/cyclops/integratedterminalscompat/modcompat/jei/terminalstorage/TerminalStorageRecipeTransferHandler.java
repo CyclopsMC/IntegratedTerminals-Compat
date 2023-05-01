@@ -45,6 +45,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -53,15 +54,15 @@ import java.util.stream.Stream;
  * @author rubensworks
  */
 public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalStorageBase<?>> implements IRecipeTransferHandler<T, CraftingRecipe> {
-    // The amount of recipeErrors that will be cached for transferRecipe
-    private static final int RECIPE_ERROR_CACHE_SIZE = 12;
+    // The amount of seconds recipeErrors will be cached for transferRecipe
+    private static final long RECIPE_ERROR_CACHE_TIME = 60;
     private final IRecipeTransferHandlerHelper recipeTransferHandlerHelper;
     private final Class<T> clazz;
     private final MenuType<T> menuType;
 
     private long previousChangeId;
     private final Cache<CraftingRecipe, Optional<IRecipeTransferError>> recipeErrorCache = CacheBuilder.newBuilder()
-            .maximumSize(RECIPE_ERROR_CACHE_SIZE)
+            .expireAfterAccess(RECIPE_ERROR_CACHE_TIME, TimeUnit.SECONDS)
             .build();
 
 
