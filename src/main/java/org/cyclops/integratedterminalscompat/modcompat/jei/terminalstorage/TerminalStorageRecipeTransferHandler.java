@@ -1,5 +1,7 @@
 package org.cyclops.integratedterminalscompat.modcompat.jei.terminalstorage;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -41,7 +43,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -50,20 +53,22 @@ import java.util.stream.Stream;
  * @author rubensworks
  */
 public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalStorageBase<?>> implements IRecipeTransferHandler<T, CraftingRecipe> {
-
+    // The amount of recipeErrors that will be cached for transferRecipe
+    private static final int RECIPE_ERROR_CACHE_SIZE = 12;
     private final IRecipeTransferHandlerHelper recipeTransferHandlerHelper;
     private final Class<T> clazz;
     private final MenuType<T> menuType;
 
     private long previousChangeId;
-    private RecipeErrorCache recipeErrorCache;
+    private final Cache<CraftingRecipe, Optional<IRecipeTransferError>> recipeErrorCache = CacheBuilder.newBuilder()
+            .maximumSize(RECIPE_ERROR_CACHE_SIZE)
+            .build();
 
 
     public TerminalStorageRecipeTransferHandler(IRecipeTransferHandlerHelper recipeTransferHandlerHelper, Class<T> clazz, MenuType<T> menuType) {
         this.recipeTransferHandlerHelper = recipeTransferHandlerHelper;
         this.clazz = clazz;
         this.menuType = menuType;
-        this.recipeErrorCache = new RecipeErrorCache();
     }
 
     @Override
@@ -93,12 +98,18 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
             if (!doTransfer) {
                 TerminalStorageTabIngredientComponentClient tabClient = (TerminalStorageTabIngredientComponentClient)
                         container.getTabClient(container.getSelectedTab());
-                Supplier<IRecipeTransferError> missingItemsSupplier = () -> getMissingItems(container, recipe, recipeLayout, player, tabCommonCrafting);
+                Callable<Optional<IRecipeTransferError>> missingItemsSupplier =
+                        () -> getMissingItems(container, recipe, recipeLayout, player, tabCommonCrafting);
                 if (previousChangeId != tabClient.getLastChangeId()) {
                     // Clear cache when storage contents changed
-                    recipeErrorCache.clear();
+                    recipeErrorCache.invalidateAll();
                 }
-                return recipeErrorCache.getRecipeError(recipe, missingItemsSupplier);
+                try {
+                    return recipeErrorCache.get(recipe, missingItemsSupplier).orElse(null);
+                } catch (ExecutionException e) {
+                    // Throw exceptions from missingItemsSupplier
+                    throw new RuntimeException(e);
+                }
             } else {
                 IngredientComponentStorageWrapperHandlerItemStack.ComponentStorageWrapper playerInventory =
                         new IngredientComponentStorageWrapperHandlerItemStack.ComponentStorageWrapper(IngredientComponent.ITEMSTACK, new InvWrapper(player.getInventory()));
@@ -159,7 +170,7 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
         return new TransferError();
     }
 
-    private IRecipeTransferError getMissingItems(T container, CraftingRecipe recipe, IRecipeSlotsView recipeLayout, Player player, TerminalStorageTabIngredientComponentItemStackCraftingCommon tabCommonCrafting) {
+    private Optional<IRecipeTransferError> getMissingItems(T container, CraftingRecipe recipe, IRecipeSlotsView recipeLayout, Player player, TerminalStorageTabIngredientComponentItemStackCraftingCommon tabCommonCrafting) {
         TerminalStorageTabIngredientComponentClient tabClient = (TerminalStorageTabIngredientComponentClient)
                 container.getTabClient(container.getSelectedTab());
 
@@ -227,10 +238,10 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
         previousChangeId = tabClient.getLastChangeId();
         if (!slotsMissingItems.isEmpty()) {
             Component message = Component.translatable("jei.tooltip.error.recipe.transfer.missing");
-            return recipeTransferHandlerHelper.createUserErrorForMissingSlots(message, slotsMissingItems);
+            return Optional.of(recipeTransferHandlerHelper.createUserErrorForMissingSlots(message, slotsMissingItems));
         }
 
-        return null;
+        return Optional.empty();
     }
 
     public static class TransferError implements IRecipeTransferError {
