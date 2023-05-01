@@ -33,7 +33,7 @@ Integrated Terminals compatibility with other mods. This mod is automatically pa
 [[dependencies.integratedterminalscompat]]
     modId="forge"
     mandatory=true
-    versionRange="[45.0.20,)"
+    versionRange="[45.0.50,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.integratedterminalscompat]]
