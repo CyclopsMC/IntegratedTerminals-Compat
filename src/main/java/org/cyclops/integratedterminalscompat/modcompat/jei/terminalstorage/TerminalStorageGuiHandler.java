@@ -5,10 +5,10 @@ import mezz.jei.api.ingredients.IIngredientType;
 import mezz.jei.api.ingredients.ITypedIngredient;
 import mezz.jei.api.runtime.IClickableIngredient;
 import mezz.jei.api.runtime.IIngredientManager;
-import mezz.jei.common.input.ClickableIngredient;
-import mezz.jei.common.util.ImmutableRect2i;
+import net.minecraft.client.renderer.Rect2i;
 import org.cyclops.integratedterminals.client.gui.container.ContainerScreenTerminalStorage;
 import org.cyclops.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentClient;
+import org.cyclops.integratedterminalscompat.modcompat.jei.ClickableIngredient;
 import org.cyclops.integratedterminalscompat.modcompat.jei.JEIIntegratedTerminalsConfig;
 import org.jetbrains.annotations.NotNull;
 
@@ -44,7 +44,7 @@ public class TerminalStorageGuiHandler implements IGuiContainerHandler<Container
             Optional<IIngredientType<T>> ingredientTypeOptional = instanceOptional
                     .flatMap(ingredientManager::getIngredientTypeChecked);
             if (instanceOptional.isPresent() && ingredientTypeOptional.isPresent()) {
-                ImmutableRect2i slotRect = new ImmutableRect2i(containerScreen.getStorageSlotRect(slotIndex));
+                Rect2i slotRect = containerScreen.getStorageSlotRect(slotIndex);
                 Optional<ITypedIngredient<T>> typedIngredientOptional = ingredientManager
                         .createTypedIngredient(ingredientTypeOptional.get(), instanceOptional.get());
                 return typedIngredientOptional
