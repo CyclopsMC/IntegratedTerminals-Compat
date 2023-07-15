@@ -127,7 +127,7 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
             if (wasJeiVisiblePrevious != wasJeiVisible) {
                 ((ContainerScreenTerminalStorage) Minecraft.getInstance().screen).init();
             }
-        } catch (NoClassDefFoundError e) {
+        } catch (NoClassDefFoundError | ClassCastException e) {
             // Do nothing when we detect some JEI API issues
         }
     }
