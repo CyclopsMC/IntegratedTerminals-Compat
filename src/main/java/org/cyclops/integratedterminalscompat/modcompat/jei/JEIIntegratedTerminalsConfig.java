@@ -110,23 +110,25 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
 
     @SubscribeEvent
     public void onTerminalStorageScreenSize(TerminalStorageScreenSizeEvent event) {
-        boolean isOpen = true;
-        try {
-            isOpen = ((IngredientListOverlay) jeiRuntime.getIngredientListOverlay()).isListDisplayed() || ((BookmarkOverlay) jeiRuntime.getBookmarkOverlay()).isListDisplayed();
-        } catch (NoClassDefFoundError e) {
-            // Ignore errors
-        }
-        boolean wasJeiVisiblePrevious = wasJeiVisible;
-        if (isOpen) {
-            wasJeiVisible = true;
-            event.setWidth(event.getWidth() - 180);
-        } else {
-            wasJeiVisible = false;
-        }
+        if (jeiRuntime != null) {
+            boolean isOpen = true;
+            try {
+                isOpen = ((IngredientListOverlay) jeiRuntime.getIngredientListOverlay()).isListDisplayed() || ((BookmarkOverlay) jeiRuntime.getBookmarkOverlay()).isListDisplayed();
+            } catch (NoClassDefFoundError e) {
+                // Ignore errors
+            }
+            boolean wasJeiVisiblePrevious = wasJeiVisible;
+            if (isOpen) {
+                wasJeiVisible = true;
+                event.setWidth(event.getWidth() - 180);
+            } else {
+                wasJeiVisible = false;
+            }
 
-        // Re-init screen if JEI was just made (in)visible
-        if (wasJeiVisiblePrevious != wasJeiVisible) {
-            ((ContainerScreenTerminalStorage) Minecraft.getInstance().screen).init();
+            // Re-init screen if JEI was just made (in)visible
+            if (wasJeiVisiblePrevious != wasJeiVisible) {
+                ((ContainerScreenTerminalStorage) Minecraft.getInstance().screen).init();
+            }
         }
     }
 
