@@ -21,7 +21,8 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
-import net.minecraftforge.items.wrapper.InvWrapper;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.neoforged.neoforge.items.wrapper.InvWrapper;
 import org.apache.commons.lang3.tuple.Pair;
 import org.cyclops.commoncapabilities.api.ingredient.IngredientComponent;
 import org.cyclops.commoncapabilities.ingredient.storage.IngredientComponentStorageWrapperHandlerItemStack;
@@ -53,7 +54,7 @@ import java.util.stream.Stream;
  * Handles recipe clicking from JEI.
  * @author rubensworks
  */
-public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalStorageBase<?>> implements IRecipeTransferHandler<T, CraftingRecipe> {
+public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalStorageBase<?>> implements IRecipeTransferHandler<T, RecipeHolder<CraftingRecipe>> {
     // The amount of seconds recipeErrors will be cached for transferRecipe
     private static final long RECIPE_ERROR_CACHE_TIME = 60;
     private final IRecipeTransferHandlerHelper recipeTransferHandlerHelper;
@@ -83,13 +84,13 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
     }
 
     @Override
-    public RecipeType<CraftingRecipe> getRecipeType() {
+    public RecipeType<RecipeHolder<CraftingRecipe>> getRecipeType() {
         return RecipeTypes.CRAFTING;
     }
 
     @Nullable
     @Override
-    public IRecipeTransferError transferRecipe(T container, CraftingRecipe recipe, IRecipeSlotsView recipeLayout,
+    public IRecipeTransferError transferRecipe(T container, RecipeHolder<CraftingRecipe> recipeHolder, IRecipeSlotsView recipeLayout,
                                                Player player, boolean maxTransfer, boolean doTransfer) {
         if (Objects.equals(container.getSelectedTab(), TerminalStorageTabIngredientComponentItemStackCrafting.NAME.toString())) {
             ITerminalStorageTabCommon tabCommon = container.getTabCommon(container.getSelectedTab());
@@ -100,13 +101,13 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
                 TerminalStorageTabIngredientComponentClient tabClient = (TerminalStorageTabIngredientComponentClient)
                         container.getTabClient(container.getSelectedTab());
                 Callable<Optional<IRecipeTransferError>> missingItemsSupplier =
-                        () -> getMissingItems(container, recipe, recipeLayout, player, tabCommonCrafting);
+                        () -> getMissingItems(container, recipeHolder.value(), recipeLayout, player, tabCommonCrafting);
                 if (previousChangeId != tabClient.getLastChangeId()) {
                     // Clear cache when storage contents changed
                     recipeErrorCache.invalidateAll();
                 }
                 try {
-                    return recipeErrorCache.get(recipe, missingItemsSupplier).orElse(null);
+                    return recipeErrorCache.get(recipeHolder.value(), missingItemsSupplier).orElse(null);
                 } catch (ExecutionException e) {
                     // Throw exceptions from missingItemsSupplier
                     throw new RuntimeException(e);

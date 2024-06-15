@@ -15,9 +15,9 @@ import mezz.jei.gui.overlay.bookmarks.BookmarkOverlay;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.client.event.ScreenEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.ScreenEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import org.cyclops.commoncapabilities.api.capability.itemhandler.ItemMatch;
 import org.cyclops.cyclopscore.client.gui.component.input.WidgetTextFieldExtended;
 import org.cyclops.integratedterminals.RegistryEntries;
@@ -50,7 +50,7 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
     private boolean wasJeiVisible = false;
 
     public JEIIntegratedTerminalsConfig() {
-        MinecraftForge.EVENT_BUS.register(this);
+        NeoForge.EVENT_BUS.register(this);
     }
 
     public static int getItemStackMatchCondition(ItemStack itemStack) {
@@ -73,10 +73,10 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
     public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
         registration.addUniversalRecipeTransferHandler(
                 new TerminalStorageRecipeTransferHandler<>(registration.getTransferHelper(),
-                        ContainerTerminalStoragePart.class, RegistryEntries.CONTAINER_PART_TERMINAL_STORAGE_PART));
+                        ContainerTerminalStoragePart.class, RegistryEntries.CONTAINER_PART_TERMINAL_STORAGE_PART.get()));
         registration.addUniversalRecipeTransferHandler(
                 new TerminalStorageRecipeTransferHandler<>(registration.getTransferHelper(),
-                        ContainerTerminalStorageItem.class, RegistryEntries.CONTAINER_PART_TERMINAL_STORAGE_ITEM));
+                        ContainerTerminalStorageItem.class, RegistryEntries.CONTAINER_PART_TERMINAL_STORAGE_ITEM.get()));
     }
 
     @Override

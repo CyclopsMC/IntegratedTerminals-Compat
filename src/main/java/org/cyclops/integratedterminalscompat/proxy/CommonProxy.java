@@ -22,6 +22,6 @@ public class CommonProxy extends CommonProxyComponent {
     public void registerPacketHandlers(PacketHandler packetHandler) {
         super.registerPacketHandlers(packetHandler);
 
-        packetHandler.register(TerminalStorageIngredientItemStackCraftingGridSetRecipe.class);
+        packetHandler.register(TerminalStorageIngredientItemStackCraftingGridSetRecipe.ID, TerminalStorageIngredientItemStackCraftingGridSetRecipe::new);
     }
 }

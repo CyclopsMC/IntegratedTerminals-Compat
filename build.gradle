@@ -1,16 +1,15 @@
 plugins {
-    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
-    id 'com.matthewprenger.cursegradle' version '1.4.0'
+	id 'net.neoforged.gradle.userdev' version '7.0.97'
+    id 'net.darkhax.curseforgegradle' version '1.0.8'
 	id 'com.github.kt3k.coveralls' version '2.8.2'
     id 'com.diffplug.spotless' version '5.14.3'
 }
 
-apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'idea'
 apply plugin: 'maven-publish'
 apply plugin: 'jacoco'
 
-import net.minecraftforge.gradle.common.tasks.SignJar
+import net.neoforged.gradle.common.tasks.PotentiallySignJar
 
 // Determine build number
 String build_number = "DEV" // this will be referenced as simply build_number from now on.
@@ -27,7 +26,10 @@ logger.lifecycle "BUILDING VERSION: " + build_number
 // Set mod details
 version = project.mod_version
 group = "org.cyclops.integratedterminalscompat"
-archivesBaseName = "IntegratedTerminals-Compat"
+archivesBaseName = "IntegratedTerminals-Compat-${project.minecraft_version}-neoforge"
+base {
+    archivesName = archivesBaseName
+}
 
 // Set Java details
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
@@ -48,6 +50,7 @@ sourceSets {
     main
     test
 }
+sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 configurations {
     modLib
@@ -67,8 +70,8 @@ repositories {
         name "Cyclops Repo"
         url "https://maven.pkg.github.com/CyclopsMC/packages"
         credentials {
-            username = project.findProperty("gpr.user") ?: System.getenv("MAVEN_USERNAME")
-            password = project.findProperty("gpr.key") ?: System.getenv("MAVEN_KEY")
+            username = project.findProperty("gpr.user") ?: System.getenv("MAVEN_USERNAME") ?: System.getenv("GITHUB_USER")
+            password = project.findProperty("gpr.key") ?: System.getenv("MAVEN_KEY") ?: System.getenv("GITHUB_TOKEN")
         }
     }
     maven {
@@ -86,109 +89,92 @@ repositories {
 }
 
 dependencies {
-    minecraft "net.minecraftforge:forge:${project.minecraft_version}-${project.forge_version}"
+    implementation "net.neoforged:neoforge:${project.neoforge_version}"
 
     // Add something like 'cyclopscore_version_local=0.1.0-DEV' to your secrets.properties if you want to use a custom local CyclopsCore version.
     if(secrets.cyclopscore_version_local) {
-        implementation "org.cyclops.cyclopscore:cyclopscore:${project.minecraft_version}-${secrets.cyclopscore_version_local}:deobf"
+        implementation "org.cyclops.cyclopscore:cyclopscore-${project.minecraft_version}-neoforge:${secrets.cyclopscore_version_local}:deobf"
     } else {
-        implementation "org.cyclops.cyclopscore:cyclopscore:${project.minecraft_version}-${project.cyclopscore_version}:deobf"
+        implementation "org.cyclops.cyclopscore:cyclopscore-${project.minecraft_version}-neoforge:${project.cyclopscore_version}:deobf"
     }
 	
     // Add something like 'integrateddynamics_version_local=0.1.0-DEV' to your secrets.properties if you want to use a custom local Integrated Tunnels Compat version.
     if(secrets.integrateddynamics_version_local) {
-        implementation ("org.cyclops.integrateddynamics:integrateddynamics:${secrets.integrateddynamics_version_local}:deobf") {
+        implementation ("org.cyclops.integrateddynamics:integrateddynamics-${project.minecraft_version}-neoforge:${secrets.integrateddynamics_version_local}:deobf") {
             transitive = false
         }
     } else {
-        implementation ("org.cyclops.integrateddynamics:integrateddynamics:${project.integrateddynamics_version}:deobf") {
+        implementation ("org.cyclops.integrateddynamics:integrateddynamics-${project.minecraft_version}-neoforge:${project.integrateddynamics_version}:deobf") {
             transitive = false
         }
     }
 	
     // Add something like 'integratedterminals_version_local=0.1.0-DEV' to your secrets.properties if you want to use a custom local Integrated Tunnels Compat version.
     if(secrets.integratedterminals_version_local) {
-        implementation ("org.cyclops.integratedterminals:integratedterminals:${secrets.integratedterminals_version_local}:deobf") {
+        implementation ("org.cyclops.integratedterminals:integratedterminals-${project.minecraft_version}-neoforge:${secrets.integratedterminals_version_local}:deobf") {
             transitive = false
         }
     } else {
-        implementation ("org.cyclops.integratedterminals:integratedterminals:${project.integratedterminals_version}:deobf") {
+        implementation ("org.cyclops.integratedterminals:integratedterminals-${project.minecraft_version}-neoforge:${project.integratedterminals_version}:deobf") {
             transitive = false
         }
     }
 
     if(secrets.commoncapabilities_version_local) {
-        implementation ("org.cyclops.commoncapabilities:commoncapabilities:${secrets.commoncapabilities_version_local}:deobf") {
+        implementation ("org.cyclops.commoncapabilities:commoncapabilities-${project.minecraft_version}-neoforge:${secrets.commoncapabilities_version_local}:deobf") {
             transitive = false
         }
     } else {
-        implementation ("org.cyclops.commoncapabilities:commoncapabilities:${project.commoncapabilities_version}:deobf") { // https://dl.bintray.com/cyclopsmc/dev/org/cyclops/commoncapabilities/CommonCapabilities/
+        implementation ("org.cyclops.commoncapabilities:commoncapabilities-${project.minecraft_version}-neoforge:${project.commoncapabilities_version}:deobf") { // https://dl.bintray.com/cyclopsmc/dev/org/cyclops/commoncapabilities/CommonCapabilities/
             transitive = false
         }
     }
 
     modLib "com.google.re2j:re2j:1.1"
+    modLib ("io.netty:netty-codec-http:4.1.77.Final") {
+        transitive = false
+    }
 
-    implementation fg.deobf("mezz.jei:jei-${project.jei_version}") // https://maven.blamejared.com/mezz/jei/ https://dvs1.progwml6.com/jenkins/
+    implementation("mezz.jei:jei-${project.minecraft_version}-neoforge:${project.jei_version}") // https://maven.blamejared.com/mezz/jei/ https://dvs1.progwml6.com/jenkins/
 
     //runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:${project.curios_version}") // https://maven.theillusivec4.top/top/theillusivec4/curios/curios-forge/
-    compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:${project.curios_version}:api")
+    compileOnly("top.theillusivec4.curios:curios-neoforge:${project.curios_version}:api")
 }
 
-minecraft {
-    mappings channel: "official", version: "${project.minecraft_version}"
+runs {
+    configureEach {
+		systemProperty 'forge.logging.markers', 'REGISTRIES'
+        systemProperty 'forge.logging.console.level', 'debug'
+        systemProperty 'forge.logging.console.level', 'debug'
+        modSource project.sourceSets.main
 
-    runs {
-        client {
-            workingDirectory project.file('run')
-            //property 'forge.logging.markers', 'REGISTRIES,REGISTRYDUMP'
-            property 'forge.logging.console.level', 'debug'
-            mods {
-                integratedterminalscompat {
-                    source sourceSets.main
-                }
-            }
-
-            lazyToken('minecraft_classpath') {
-                configurations.modLib.copyRecursive().resolve().collect { it.absolutePath }.join(File.pathSeparator)
-            }
+        dependencies {
+            runtime project.configurations.modLib
         }
+    }
+	
+    client {
+        systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
+    }
 
-        server {
-            workingDirectory project.file('run')
-            property 'forge.logging.console.level', 'debug'
-            mods {
-                integratedterminalscompat {
-                    source sourceSets.main
-                }
-            }
+    server {
+        systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
+        programArgument '--nogui'
+    }
 
-            lazyToken('minecraft_classpath') {
-                configurations.modLib.copyRecursive().resolve().collect { it.absolutePath }.join(File.pathSeparator)
-            }
-        }
+    gameTestServer {
+        systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
+    }
 
-        data {
-            workingDirectory project.file('run')
-            property 'forge.logging.console.level', 'debug'
-            args '--mod', 'integratedterminalscompat', '--all', '--output', file('src/generated/resources/')
-            mods {
-                integratedterminalscompat {
-                    source sourceSets.main
-                }
-            }
-
-            lazyToken('minecraft_classpath') {
-                configurations.modLib.copyRecursive().resolve().collect { it.absolutePath }.join(File.pathSeparator)
-            }
-        }
+    data {
+        programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
     }
 }
 
 if (build_number.equals("RELEASE"))
-    version = "${project.minecraft_version}-${project.mod_version}"
+    version = "${project.mod_version}"
 else
-    version = "${project.minecraft_version}-${project.mod_version}-${build_number}"
+    version = "${project.mod_version}-${build_number}"
 
 jar {
     manifest {
@@ -204,7 +190,9 @@ jar {
     }
 }
 
-task signJar(type: SignJar, dependsOn: jar) {
+task signJar(type: PotentiallySignJar, dependsOn: jar) {
+	dependsOn(tasks.jar)
+
     onlyIf {
         System.getenv().SIGN_KEYSTORE
     }
@@ -213,10 +201,9 @@ task signJar(type: SignJar, dependsOn: jar) {
     alias = System.getenv().SIGN_ALIAS
     storePass = System.getenv().SIGN_STOREPASS
     keyPass = System.getenv().SIGN_KEYPASS
-    inputFile = jar.archivePath
-    outputFile = jar.archivePath
+    input = jar.archivePath
+    output = jar.archivePath
 }
-build.dependsOn signJar
 
 task deobfJar(type: Jar) {
     from sourceSets.main.output
@@ -317,3 +304,7 @@ tasks.register('updateGitHooks', Copy) {
     into './.git/hooks'
 }
 compileJava.dependsOn updateGitHooks
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+}

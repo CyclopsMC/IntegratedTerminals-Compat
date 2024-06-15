@@ -1,15 +1,14 @@
 package org.cyclops.integratedterminalscompat;
 
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.common.Mod;
 import org.apache.logging.log4j.Level;
 import org.cyclops.cyclopscore.config.ConfigHandler;
 import org.cyclops.cyclopscore.init.ModBaseVersionable;
-import org.cyclops.cyclopscore.modcompat.ModCompatLoader;
 import org.cyclops.cyclopscore.proxy.IClientProxy;
 import org.cyclops.cyclopscore.proxy.ICommonProxy;
-import org.cyclops.integratedterminalscompat.modcompat.curios.CuriosCompat;
 import org.cyclops.integratedterminalscompat.proxy.ClientProxy;
 import org.cyclops.integratedterminalscompat.proxy.CommonProxy;
 
@@ -23,16 +22,8 @@ public class IntegratedTerminalsCompat extends ModBaseVersionable<IntegratedTerm
 
     public static IntegratedTerminalsCompat _instance;
 
-    public IntegratedTerminalsCompat() {
-        super(Reference.MOD_ID, (instance) -> _instance = instance);
-    }
-
-    @Override
-    protected void loadModCompats(ModCompatLoader modCompatLoader) {
-        super.loadModCompats(modCompatLoader);
-
-        // Mod compats
-        modCompatLoader.addModCompat(new CuriosCompat());
+    public IntegratedTerminalsCompat(IEventBus modEventBus) {
+        super(Reference.MOD_ID, (instance) -> _instance = instance, modEventBus);
     }
 
     @Override

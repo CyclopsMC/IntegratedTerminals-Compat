@@ -2,15 +2,16 @@ package org.cyclops.integratedterminalscompat.network.packet;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.items.wrapper.InvWrapper;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.items.wrapper.InvWrapper;
 import org.apache.commons.lang3.tuple.Pair;
 import org.cyclops.commoncapabilities.api.ingredient.IngredientComponent;
 import org.cyclops.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
@@ -22,6 +23,7 @@ import org.cyclops.integratedterminals.core.terminalstorage.TerminalStorageTabIn
 import org.cyclops.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentServer;
 import org.cyclops.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import org.cyclops.integratedterminals.network.packet.TerminalStorageIngredientItemStackCraftingGridClear;
+import org.cyclops.integratedterminalscompat.Reference;
 
 import java.util.List;
 import java.util.Map;
@@ -33,6 +35,8 @@ import java.util.Map;
  */
 public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends PacketCodec {
 
+    public static final ResourceLocation ID = new ResourceLocation(Reference.MOD_ID, "terminal_storage_ingredient_itemstack_crafting_grid_set_recipe");
+
     @CodecField
     private String tabId;
     @CodecField
@@ -43,12 +47,13 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
     private Map<Integer, List<Pair<ItemStack, Integer>>> slottedIngredientsFromStorage;
 
     public TerminalStorageIngredientItemStackCraftingGridSetRecipe() {
-
+        super(ID);
     }
 
     public TerminalStorageIngredientItemStackCraftingGridSetRecipe(String tabId, int channel, boolean maxTransfer,
                                                                    Map<Integer, Pair<ItemStack, Integer>> slottedIngredientsFromPlayer,
                                                                    Map<Integer, List<Pair<ItemStack, Integer>>> slottedIngredientsFromStorage) {
+        super(ID);
         this.tabId = tabId;
         this.channel = channel;
         this.maxTransfer = maxTransfer;
