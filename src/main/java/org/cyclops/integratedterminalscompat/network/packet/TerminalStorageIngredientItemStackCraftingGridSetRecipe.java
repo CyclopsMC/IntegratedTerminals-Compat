@@ -2,7 +2,8 @@ package org.cyclops.integratedterminalscompat.network.packet;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -33,9 +34,10 @@ import java.util.Map;
  * @author rubensworks
  *
  */
-public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends PacketCodec {
+public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends PacketCodec<TerminalStorageIngredientItemStackCraftingGridSetRecipe> {
 
-    public static final ResourceLocation ID = new ResourceLocation(Reference.MOD_ID, "terminal_storage_ingredient_itemstack_crafting_grid_set_recipe");
+    public static final Type<TerminalStorageIngredientItemStackCraftingGridSetRecipe> ID = new Type<>(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "terminal_storage_ingredient_itemstack_crafting_grid_set_recipe"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, TerminalStorageIngredientItemStackCraftingGridSetRecipe> CODEC = getCodec(TerminalStorageIngredientItemStackCraftingGridSetRecipe::new);
 
     @CodecField
     private String tabId;
@@ -62,14 +64,14 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
     }
 
     @Override
-    public void encode(FriendlyByteBuf output) {
+    public void encode(RegistryFriendlyByteBuf output) {
         super.encode(output);
 
         // slottedIngredientsFromPlayer and slottedIngredientsFromStorage are encoded manually for more space efficiency
         output.writeInt(slottedIngredientsFromPlayer.size());
         for (Map.Entry<Integer, Pair<ItemStack, Integer>> entry : slottedIngredientsFromPlayer.entrySet()) {
             output.writeInt(entry.getKey());
-            output.writeItem(entry.getValue().getLeft());
+            ItemStack.OPTIONAL_STREAM_CODEC.encode(output, entry.getValue().getLeft());
             output.writeInt(entry.getValue().getRight());
         }
 
@@ -78,21 +80,21 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
             output.writeInt(entry.getKey());
             output.writeInt(entry.getValue().size());
             for (Pair<ItemStack, Integer> subEntry : entry.getValue()) {
-                output.writeItem(subEntry.getLeft());
+                ItemStack.OPTIONAL_STREAM_CODEC.encode(output, subEntry.getLeft());
                 output.writeInt(subEntry.getRight());
             }
         }
     }
 
     @Override
-    public void decode(FriendlyByteBuf input) {
+    public void decode(RegistryFriendlyByteBuf input) {
         super.decode(input);
 
         // slottedIngredientsFromPlayer and slottedIngredientsFromStorage are encoded manually for more space efficiency
         int entriesSlottedIngredientsFromPlayer = input.readInt();
         this.slottedIngredientsFromPlayer = Maps.newHashMap();
         for (int i = 0; i < entriesSlottedIngredientsFromPlayer; i++) {
-            this.slottedIngredientsFromPlayer.put(input.readInt(), Pair.of(input.readItem(), input.readInt()));
+            this.slottedIngredientsFromPlayer.put(input.readInt(), Pair.of(ItemStack.OPTIONAL_STREAM_CODEC.decode(input), input.readInt()));
         }
 
         int entriesSlottedIngredientsFromStorage = input.readInt();
@@ -102,7 +104,7 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
             int entries = input.readInt();
             List<Pair<ItemStack, Integer>> alternatives = Lists.newArrayListWithExpectedSize(entries);
             for (int j = 0; j < entries; j++) {
-                alternatives.add(Pair.of(input.readItem(), input.readInt()));
+                alternatives.add(Pair.of(ItemStack.OPTIONAL_STREAM_CODEC.decode(input), input.readInt()));
             }
             this.slottedIngredientsFromStorage.put(key, alternatives);
         }

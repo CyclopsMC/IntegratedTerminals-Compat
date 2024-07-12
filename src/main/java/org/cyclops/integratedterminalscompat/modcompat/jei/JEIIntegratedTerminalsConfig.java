@@ -61,7 +61,7 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
         // So if we would run into problems with this, this filtering is what we'd need to do.
 
         String subTypeInfo = JEIIntegratedTerminalsConfig.subTypeManager.getSubtypeInfo(VanillaTypes.ITEM_STACK, itemStack, UidContext.Ingredient);
-        return subTypeInfo == null ? ItemMatch.ITEM : ItemMatch.ITEM | ItemMatch.TAG;
+        return subTypeInfo == null ? ItemMatch.ITEM : ItemMatch.ITEM | ItemMatch.DATA;
     }
 
     @Override
@@ -94,7 +94,7 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
 
     @Override
     public ResourceLocation getPluginUid() {
-        return new ResourceLocation(Reference.MOD_ID, "main");
+        return ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "main");
     }
 
     @Override

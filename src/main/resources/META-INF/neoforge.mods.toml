@@ -15,25 +15,25 @@ Integrated Terminals compatibility with other mods. This mod is automatically pa
 [[dependencies.integratedterminalscompat]]
     modId="cyclopscore"
     type="required"
-    versionRange="[1.19.0,)"
+    versionRange="[1.19.1,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.integratedterminalscompat]]
     modId="integrateddynamics"
     type="required"
-    versionRange="[1.16.7,)"
+    versionRange="[1.21.4,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.integratedterminalscompat]]
     modId="commoncapabilities"
     type="required"
-    versionRange="[2.9.0,)"
+    versionRange="[2.9.1,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.integratedterminalscompat]]
     modId="neoforge"
     type="required"
-    versionRange="[20.4,)"
+    versionRange="[21.0.43-beta,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.integratedterminalscompat]]
@@ -45,6 +45,6 @@ Integrated Terminals compatibility with other mods. This mod is automatically pa
 [[dependencies.integratedterminalscompat]]
     modId="minecraft"
     type="required"
-    versionRange="[1.20.4,]"
+    versionRange="[1.21,]"
     ordering="NONE"
     side="BOTH"
