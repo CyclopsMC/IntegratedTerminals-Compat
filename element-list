@@ -1,4 +1,5 @@
 org.cyclops.integratedterminalscompat
+org.cyclops.integratedterminalscompat.modcompat.curios
 org.cyclops.integratedterminalscompat.modcompat.jei
 org.cyclops.integratedterminalscompat.modcompat.jei.terminalstorage
 org.cyclops.integratedterminalscompat.modcompat.jei.terminalstorage.button
