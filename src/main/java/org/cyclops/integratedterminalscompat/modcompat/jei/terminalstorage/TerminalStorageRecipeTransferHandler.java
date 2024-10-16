@@ -15,7 +15,7 @@ import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandlerHelper;
-import net.minecraft.network.chat.Component;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
@@ -35,6 +35,7 @@ import org.cyclops.integratedterminals.core.terminalstorage.TerminalStorageTabIn
 import org.cyclops.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import org.cyclops.integratedterminalscompat.IntegratedTerminalsCompat;
 import org.cyclops.integratedterminalscompat.modcompat.jei.JEIIntegratedTerminalsConfig;
+import org.cyclops.integratedterminalscompat.modcompat.jei.RecipeTransferErrorColored;
 import org.cyclops.integratedterminalscompat.network.packet.TerminalStorageIngredientItemStackCraftingGridSetRecipe;
 
 import javax.annotation.Nullable;
@@ -163,7 +164,7 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
 
                 IntegratedTerminalsCompat._instance.getPacketHandler().sendToServer(
                         new TerminalStorageIngredientItemStackCraftingGridSetRecipe(container.getSelectedTab(),
-                                container.getSelectedChannel(), maxTransfer, slottedIngredientsFromPlayer, slottedIngredientsFromStorage));
+                                container.getSelectedChannel(), maxTransfer, slottedIngredientsFromPlayer, slottedIngredientsFromStorage, AbstractContainerScreen.hasControlDown()));
                 return null;
             }
         }
@@ -191,18 +192,26 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
         List<TerminalStorageTabIngredientComponentClient.InstanceWithMetadata<ItemStack>> unfilteredIngredients = tabClient
                 .getUnfilteredIngredientsView(container.getSelectedChannel());
         IIngredientCollectionMutable<ItemStack, Integer> hayStack = IngredientCollectionHelpers.createCollapsedCollection(IngredientComponent.ITEMSTACK);
+        IIngredientCollectionMutable<ItemStack, Integer> hayStackCraftable = IngredientCollectionHelpers.createCollapsedCollection(IngredientComponent.ITEMSTACK);
         hayStack.addAll(unfilteredIngredients
                 .stream()
                 .filter(i -> i.getCraftingOption() == null)
                 .map(TerminalStorageTabIngredientComponentClient.InstanceWithMetadata::getInstance)
                 .collect(Collectors.toList()));
+        hayStackCraftable.addAll(unfilteredIngredients
+                .stream()
+                .filter(i -> i.getCraftingOption() != null)
+                .map(TerminalStorageTabIngredientComponentClient.InstanceWithMetadata::getInstance)
+                .collect(Collectors.toList()));
 
         List<IRecipeSlotView> slotsMissingItems = Lists.newArrayList();
+        List<IRecipeSlotView> slotsMissingCraftableItems = Lists.newArrayList();
         for (IRecipeSlotView slotView : recipeLayout.getSlotViews()) {
             if (!slotView.isEmpty() && slotView.getRole() == RecipeIngredientRole.INPUT) {
                 ITypedIngredient<?> typedIngredient = slotView.getAllIngredients().findFirst().get();
                 if (typedIngredient.getType() == VanillaTypes.ITEM_STACK) {
                     boolean found = false;
+                    boolean craftable = false;
                     for (ItemStack itemStack : ((Stream<ITypedIngredient<ItemStack>>) (Stream) slotView.getAllIngredients())
                             .map(ITypedIngredient::getIngredient)
                             .collect(Collectors.toSet())) {
@@ -228,18 +237,26 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
                             found = true;
                             break;
                         }
+
+                        // Also check if this item could be craftable
+                        if (hayStackCraftable.contains(itemStack, matchCondition)) {
+                            craftable = true;
+                        }
                     }
                     if (!found) {
-                        slotsMissingItems.add(slotView);
+                        if (craftable) {
+                            slotsMissingCraftableItems.add(slotView);
+                        } else {
+                            slotsMissingItems.add(slotView);
+                        }
                     }
                 }
             }
         }
 
         previousChangeId = tabClient.getLastChangeId();
-        if (!slotsMissingItems.isEmpty()) {
-            Component message = Component.translatable("jei.tooltip.error.recipe.transfer.missing");
-            return Optional.of(recipeTransferHandlerHelper.createUserErrorForMissingSlots(message, slotsMissingItems));
+        if (!slotsMissingItems.isEmpty() || !slotsMissingCraftableItems.isEmpty()) {
+            return Optional.of(new RecipeTransferErrorColored(slotsMissingItems, slotsMissingCraftableItems));
         }
 
         return Optional.empty();
