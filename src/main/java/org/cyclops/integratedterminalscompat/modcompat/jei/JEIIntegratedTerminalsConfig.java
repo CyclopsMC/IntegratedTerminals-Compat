@@ -21,8 +21,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.cyclops.commoncapabilities.api.capability.itemhandler.ItemMatch;
 import org.cyclops.cyclopscore.client.gui.component.input.WidgetTextFieldExtended;
 import org.cyclops.integratedterminals.RegistryEntries;
-import org.cyclops.integratedterminals.api.terminalstorage.ITerminalButton;
-import org.cyclops.integratedterminals.api.terminalstorage.ITerminalStorageTabClient;
 import org.cyclops.integratedterminals.api.terminalstorage.event.TerminalStorageScreenSizeEvent;
 import org.cyclops.integratedterminals.api.terminalstorage.event.TerminalStorageTabClientLoadButtonsEvent;
 import org.cyclops.integratedterminals.api.terminalstorage.event.TerminalStorageTabClientSearchFieldUpdateEvent;
@@ -31,9 +29,9 @@ import org.cyclops.integratedterminals.inventory.container.ContainerTerminalStor
 import org.cyclops.integratedterminals.inventory.container.ContainerTerminalStoragePart;
 import org.cyclops.integratedterminals.part.PartTypes;
 import org.cyclops.integratedterminalscompat.Reference;
+import org.cyclops.integratedterminalscompat.modcompat.common.button.TerminalButtonItemStackCraftingGridSearchSync;
 import org.cyclops.integratedterminalscompat.modcompat.jei.terminalstorage.TerminalStorageGuiHandler;
 import org.cyclops.integratedterminalscompat.modcompat.jei.terminalstorage.TerminalStorageRecipeTransferHandler;
-import org.cyclops.integratedterminalscompat.modcompat.jei.terminalstorage.button.TerminalButtonItemStackCraftingGridJeiSearchSync;
 
 /**
  * Helper for registering JEI manager.
@@ -72,11 +70,9 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
     @Override
     public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
         registration.addUniversalRecipeTransferHandler(
-                new TerminalStorageRecipeTransferHandler<>(registration.getTransferHelper(),
-                        ContainerTerminalStoragePart.class, RegistryEntries.CONTAINER_PART_TERMINAL_STORAGE_PART));
+                new TerminalStorageRecipeTransferHandler<>(ContainerTerminalStoragePart.class, RegistryEntries.CONTAINER_PART_TERMINAL_STORAGE_PART));
         registration.addUniversalRecipeTransferHandler(
-                new TerminalStorageRecipeTransferHandler<>(registration.getTransferHelper(),
-                        ContainerTerminalStorageItem.class, RegistryEntries.CONTAINER_PART_TERMINAL_STORAGE_ITEM));
+                new TerminalStorageRecipeTransferHandler<>(ContainerTerminalStorageItem.class, RegistryEntries.CONTAINER_PART_TERMINAL_STORAGE_ITEM));
     }
 
     @Override
@@ -104,10 +100,10 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
 
     @SubscribeEvent
     public void onTerminalStorageButtons(TerminalStorageTabClientLoadButtonsEvent event) {
-        if (!event.getButtons().stream()
-                .anyMatch((button) -> button instanceof TerminalButtonItemStackCraftingGridJeiSearchSync)) {
-            event.getButtons().add(new TerminalButtonItemStackCraftingGridJeiSearchSync(
-                    event.getContainer().getGuiState(), event.getClientTab()));
+        if (jeiRuntime != null && !event.getButtons().stream()
+                .anyMatch((button) -> button instanceof TerminalButtonItemStackCraftingGridSearchSync)) {
+            event.getButtons().add(new TerminalButtonItemStackCraftingGridSearchSync(
+                    "jei", event.getContainer().getGuiState(), event.getClientTab()));
         }
     }
 
@@ -134,19 +130,10 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
         }
     }
 
-    protected boolean isSearchSynced(ITerminalStorageTabClient<?> clientTab) {
-        for (ITerminalButton<?, ?, ?> button : clientTab.getButtons()) {
-            if (button instanceof TerminalButtonItemStackCraftingGridJeiSearchSync) {
-                return ((TerminalButtonItemStackCraftingGridJeiSearchSync) button).isActive();
-            }
-        }
-        return false;
-    }
-
     @SubscribeEvent
     public void onSearchFieldUpdated(TerminalStorageTabClientSearchFieldUpdateEvent event) {
         // Copy the terminal search box contents into the JEI search box.
-        if (isSearchSynced(event.getClientTab())) {
+        if (jeiRuntime != null && TerminalButtonItemStackCraftingGridSearchSync.isSearchSynced(event.getClientTab())) {
             jeiRuntime.getIngredientFilter().setFilterText(event.getSearchString() + "");
         }
     }
@@ -156,9 +143,9 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
         // Copy the JEI search box contents into the terminal search box.
         if (event.getScreen() instanceof ContainerScreenTerminalStorage) {
             ContainerScreenTerminalStorage<?, ?> gui = ((ContainerScreenTerminalStorage<?, ?>) event.getScreen());
-            if (jeiRuntime.getIngredientListOverlay().hasKeyboardFocus()) {
+            if (jeiRuntime != null && jeiRuntime.getIngredientListOverlay().hasKeyboardFocus()) {
                 gui.getSelectedClientTab().ifPresent(tab -> {
-                    if (isSearchSynced(tab)) {
+                    if (TerminalButtonItemStackCraftingGridSearchSync.isSearchSynced(tab)) {
                         WidgetTextFieldExtended fieldSearch = gui.getFieldSearch();
                         fieldSearch.setValue(jeiRuntime.getIngredientFilter().getFilterText());
                         tab.setInstanceFilter(gui.getMenu().getSelectedChannel(), fieldSearch.getValue() + "");
