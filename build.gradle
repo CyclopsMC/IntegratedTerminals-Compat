@@ -93,6 +93,10 @@ repositories {
         name "EMI"
         url "https://maven.terraformersmc.com/"
     }
+    maven {
+        name "REI"
+        url "https://maven.shedaniel.me/"
+    }
 }
 
 dependencies {
@@ -144,7 +148,11 @@ dependencies {
     runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:${project.curios_version}") // https://maven.theillusivec4.top/top/theillusivec4/curios/curios-forge/
     compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:${project.curios_version}:api")
 
-    implementation fg.deobf("dev.emi:emi-forge:${emi_version}")
+    compileOnly fg.deobf("dev.emi:emi-forge:${emi_version}") // https://maven.terraformersmc.com/
+
+    compileOnly fg.deobf("me.shedaniel:RoughlyEnoughItems-forge:${rei_version}") // https://maven.shedaniel.me/me/shedaniel/RoughlyEnoughItems-forge/
+    implementation fg.deobf("me.shedaniel.cloth:cloth-config-forge:$cloth_config_version");
+    implementation fg.deobf("dev.architectury:architectury-forge:$architectury_version");
 }
 
 minecraft {

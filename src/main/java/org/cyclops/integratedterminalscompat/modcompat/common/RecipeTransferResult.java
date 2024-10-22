@@ -35,7 +35,7 @@ public class RecipeTransferResult<T extends RecipeInputSlot> {
         } else if (slotsMissing.isEmpty()) {
             // Missing items, but they are all craftable
             this.message.add(Component.translatable("gui.integratedterminalscompat.terminal_storage.jei.transfer.craftable").withStyle(ChatFormatting.RED));
-            this.message.add(Component.translatable("gui.integratedterminalscompat.terminal_storage.jei.transfer.craft.info").withStyle(ChatFormatting.ITALIC));
+            this.message.add(Component.translatable(HAS_CMD ? "gui.integratedterminalscompat.terminal_storage.jei.transfer.craft.info_cmd" : "gui.integratedterminalscompat.terminal_storage.jei.transfer.craft.info").withStyle(ChatFormatting.ITALIC));
             this.color = HIGHLIGHT_COLOR_CRAFTABLE;
         } else if (!slotsCraftable.isEmpty()) {
             // Missing items, but only some of them are craftable
