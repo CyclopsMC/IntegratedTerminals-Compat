@@ -18,6 +18,7 @@ import org.cyclops.integratedterminals.api.terminalstorage.event.TerminalStorage
 import org.cyclops.integratedterminals.api.terminalstorage.event.TerminalStorageTabClientLoadButtonsEvent;
 import org.cyclops.integratedterminals.api.terminalstorage.event.TerminalStorageTabClientSearchFieldUpdateEvent;
 import org.cyclops.integratedterminals.client.gui.container.ContainerScreenTerminalStorage;
+import org.cyclops.integratedterminals.client.gui.image.Images;
 import org.cyclops.integratedterminalscompat.modcompat.common.button.TerminalButtonItemStackCraftingGridSearchSync;
 import org.cyclops.integratedterminalscompat.modcompat.emi.terminalstorage.TerminalStorageEmiRecipeHandler;
 import org.cyclops.integratedterminalscompat.modcompat.emi.terminalstorage.TerminalStorageEmiStackProvider;
@@ -54,7 +55,7 @@ public class EmiIntegratedTerminalsConfig implements EmiPlugin {
         if (this.loaded && !event.getButtons().stream()
                 .anyMatch((button) -> button instanceof TerminalButtonItemStackCraftingGridSearchSync)) {
             event.getButtons().add(new TerminalButtonItemStackCraftingGridSearchSync(
-                    "emi", event.getContainer().getGuiState(), event.getClientTab()));
+                    "emi", event.getContainer().getGuiState(), event.getClientTab(), Images.BUTTON_MIDDLE_EMI_SYNC));
         }
     }
 

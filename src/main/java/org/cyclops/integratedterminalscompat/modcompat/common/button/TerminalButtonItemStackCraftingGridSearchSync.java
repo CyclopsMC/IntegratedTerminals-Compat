@@ -8,6 +8,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.cyclops.cyclopscore.client.gui.component.button.ButtonImage;
+import org.cyclops.cyclopscore.client.gui.image.Image;
 import org.cyclops.integratedterminals.api.terminalstorage.ITerminalButton;
 import org.cyclops.integratedterminals.api.terminalstorage.ITerminalStorageTabClient;
 import org.cyclops.integratedterminals.client.gui.image.Images;
@@ -30,14 +31,16 @@ public class TerminalButtonItemStackCraftingGridSearchSync
     private final TerminalStorageState state;
     private final String buttonName;
     private final ITerminalStorageTabClient<?> clientTab;
+    private final Image image;
 
     private boolean active;
 
-    public TerminalButtonItemStackCraftingGridSearchSync(String mod, TerminalStorageState state, ITerminalStorageTabClient<?> clientTab) {
+    public TerminalButtonItemStackCraftingGridSearchSync(String mod, TerminalStorageState state, ITerminalStorageTabClient<?> clientTab, Image image) {
         this.mod = mod;
         this.state = state;
         this.buttonName = "itemstack_grid_" + mod + "searchsync";
         this.clientTab = clientTab;
+        this.image = image;
 
         reloadFromState();
     }
@@ -59,7 +62,7 @@ public class TerminalButtonItemStackCraftingGridSearchSync
                 Component.translatable("gui.integratedterminalscompat.terminal_storage.craftinggrid." + mod + "sync"),
                 (b) -> {},
                 active ? Images.BUTTON_BACKGROUND_ACTIVE : Images.BUTTON_BACKGROUND_INACTIVE,
-                Images.BUTTON_MIDDLE_JEI_SYNC);
+                this.image);
     }
 
     @Override

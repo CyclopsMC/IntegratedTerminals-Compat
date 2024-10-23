@@ -17,6 +17,7 @@ import org.cyclops.integratedterminals.api.terminalstorage.event.TerminalStorage
 import org.cyclops.integratedterminals.api.terminalstorage.event.TerminalStorageTabClientLoadButtonsEvent;
 import org.cyclops.integratedterminals.api.terminalstorage.event.TerminalStorageTabClientSearchFieldUpdateEvent;
 import org.cyclops.integratedterminals.client.gui.container.ContainerScreenTerminalStorage;
+import org.cyclops.integratedterminals.client.gui.image.Images;
 import org.cyclops.integratedterminalscompat.modcompat.common.button.TerminalButtonItemStackCraftingGridSearchSync;
 import org.cyclops.integratedterminalscompat.modcompat.rei.terminalstorage.TerminalStorageReiFocusedStackProvider;
 import org.cyclops.integratedterminalscompat.modcompat.rei.terminalstorage.TerminalStorageReiTransferHandler;
@@ -67,7 +68,7 @@ public class ReiIntegratedTerminalsConfig implements REIClientPlugin {
         if (this.loaded && !event.getButtons().stream()
                 .anyMatch((button) -> button instanceof TerminalButtonItemStackCraftingGridSearchSync)) {
             event.getButtons().add(new TerminalButtonItemStackCraftingGridSearchSync(
-                    "rei", event.getContainer().getGuiState(), event.getClientTab()));
+                    "rei", event.getContainer().getGuiState(), event.getClientTab(), Images.BUTTON_MIDDLE_REI_SYNC));
         }
     }
 

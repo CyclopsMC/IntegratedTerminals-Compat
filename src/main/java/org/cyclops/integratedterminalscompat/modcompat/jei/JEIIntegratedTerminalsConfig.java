@@ -25,6 +25,7 @@ import org.cyclops.integratedterminals.api.terminalstorage.event.TerminalStorage
 import org.cyclops.integratedterminals.api.terminalstorage.event.TerminalStorageTabClientLoadButtonsEvent;
 import org.cyclops.integratedterminals.api.terminalstorage.event.TerminalStorageTabClientSearchFieldUpdateEvent;
 import org.cyclops.integratedterminals.client.gui.container.ContainerScreenTerminalStorage;
+import org.cyclops.integratedterminals.client.gui.image.Images;
 import org.cyclops.integratedterminals.inventory.container.ContainerTerminalStorageItem;
 import org.cyclops.integratedterminals.inventory.container.ContainerTerminalStoragePart;
 import org.cyclops.integratedterminals.part.PartTypes;
@@ -103,7 +104,7 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
         if (jeiRuntime != null && !event.getButtons().stream()
                 .anyMatch((button) -> button instanceof TerminalButtonItemStackCraftingGridSearchSync)) {
             event.getButtons().add(new TerminalButtonItemStackCraftingGridSearchSync(
-                    "jei", event.getContainer().getGuiState(), event.getClientTab()));
+                    "jei", event.getContainer().getGuiState(), event.getClientTab(), Images.BUTTON_MIDDLE_JEI_SYNC));
         }
     }
 
