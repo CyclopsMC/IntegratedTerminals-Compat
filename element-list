@@ -1,7 +1,12 @@
 org.cyclops.integratedterminalscompat
+org.cyclops.integratedterminalscompat.modcompat.common
+org.cyclops.integratedterminalscompat.modcompat.common.button
 org.cyclops.integratedterminalscompat.modcompat.curios
+org.cyclops.integratedterminalscompat.modcompat.emi
+org.cyclops.integratedterminalscompat.modcompat.emi.terminalstorage
 org.cyclops.integratedterminalscompat.modcompat.jei
 org.cyclops.integratedterminalscompat.modcompat.jei.terminalstorage
-org.cyclops.integratedterminalscompat.modcompat.jei.terminalstorage.button
+org.cyclops.integratedterminalscompat.modcompat.rei
+org.cyclops.integratedterminalscompat.modcompat.rei.terminalstorage
 org.cyclops.integratedterminalscompat.network.packet
 org.cyclops.integratedterminalscompat.proxy
