@@ -1,4 +1,4 @@
-package org.cyclops.integratedterminalscompat.modcompat.jei.terminalstorage.button;
+package org.cyclops.integratedterminalscompat.modcompat.common.button;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
@@ -8,6 +8,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import org.cyclops.cyclopscore.client.gui.component.button.ButtonImage;
+import org.cyclops.cyclopscore.client.gui.image.Image;
 import org.cyclops.integratedterminals.api.terminalstorage.ITerminalButton;
 import org.cyclops.integratedterminals.api.terminalstorage.ITerminalStorageTabClient;
 import org.cyclops.integratedterminals.client.gui.image.Images;
@@ -19,23 +20,27 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 /**
- * A button for toggling JEI search box sync.
+ * A button for toggling JEI/EMI search box sync.
  * @author rubensworks
  */
-public class TerminalButtonItemStackCraftingGridJeiSearchSync
+public class TerminalButtonItemStackCraftingGridSearchSync
         implements ITerminalButton<TerminalStorageTabIngredientComponentClient<?, ?>,
         TerminalStorageTabIngredientComponentCommon<?, ?>, ButtonImage> {
 
+    private final String mod;
     private final TerminalStorageState state;
     private final String buttonName;
     private final ITerminalStorageTabClient<?> clientTab;
+    private final Image image;
 
     private boolean active;
 
-    public TerminalButtonItemStackCraftingGridJeiSearchSync(TerminalStorageState state, ITerminalStorageTabClient<?> clientTab) {
+    public TerminalButtonItemStackCraftingGridSearchSync(String mod, TerminalStorageState state, ITerminalStorageTabClient<?> clientTab, Image image) {
+        this.mod = mod;
         this.state = state;
-        this.buttonName = "itemstack_grid_jeisearchsync";
+        this.buttonName = "itemstack_grid_" + mod + "searchsync";
         this.clientTab = clientTab;
+        this.image = image;
 
         reloadFromState();
     }
@@ -54,10 +59,10 @@ public class TerminalButtonItemStackCraftingGridJeiSearchSync
     @OnlyIn(Dist.CLIENT)
     public ButtonImage createButton(int x, int y) {
         return new ButtonImage(x, y,
-                Component.translatable("gui.integratedterminalscompat.terminal_storage.craftinggrid.jeisync"),
+                Component.translatable("gui.integratedterminalscompat.terminal_storage.craftinggrid." + mod + "sync"),
                 (b) -> {},
                 active ? Images.BUTTON_BACKGROUND_ACTIVE : Images.BUTTON_BACKGROUND_INACTIVE,
-                Images.BUTTON_MIDDLE_JEI_SYNC);
+                this.image);
     }
 
     @Override
@@ -71,13 +76,13 @@ public class TerminalButtonItemStackCraftingGridJeiSearchSync
 
     @Override
     public String getTranslationKey() {
-        return "gui.integratedterminalscompat.terminal_storage.craftinggrid.jeisync";
+        return "gui.integratedterminalscompat.terminal_storage.craftinggrid." + mod + "sync";
     }
 
     @Override
     @OnlyIn(Dist.CLIENT)
     public void getTooltip(Player player, TooltipFlag tooltipFlag, List<Component> lines) {
-        lines.add(Component.translatable("gui.integratedterminalscompat.terminal_storage.craftinggrid.jeisync.info").withStyle(ChatFormatting.GRAY));
+        lines.add(Component.translatable("gui.integratedterminalscompat.terminal_storage.craftinggrid." + mod + "sync.info").withStyle(ChatFormatting.GRAY));
         lines.add(Component.translatable(
                 active ? "general.cyclopscore.info.enabled" : "general.cyclopscore.info.disabled")
                 .withStyle(ChatFormatting.ITALIC));
@@ -85,5 +90,14 @@ public class TerminalButtonItemStackCraftingGridJeiSearchSync
 
     public boolean isActive() {
         return active;
+    }
+
+    public static boolean isSearchSynced(ITerminalStorageTabClient<?> clientTab) {
+        for (ITerminalButton<?, ?, ?> button : clientTab.getButtons()) {
+            if (button instanceof TerminalButtonItemStackCraftingGridSearchSync) {
+                return ((TerminalButtonItemStackCraftingGridSearchSync) button).isActive();
+            }
+        }
+        return false;
     }
 }

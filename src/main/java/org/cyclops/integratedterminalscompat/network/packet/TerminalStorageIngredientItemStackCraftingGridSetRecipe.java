@@ -20,12 +20,18 @@ import org.cyclops.commoncapabilities.ingredient.storage.IngredientComponentStor
 import org.cyclops.cyclopscore.network.CodecField;
 import org.cyclops.cyclopscore.network.PacketCodec;
 import org.cyclops.integratedterminals.api.terminalstorage.ITerminalStorageTabCommon;
+import org.cyclops.integratedterminals.api.terminalstorage.crafting.CraftingJobStartException;
+import org.cyclops.integratedterminals.api.terminalstorage.crafting.ITerminalCraftingOption;
+import org.cyclops.integratedterminals.api.terminalstorage.crafting.ITerminalCraftingPlan;
+import org.cyclops.integratedterminals.api.terminalstorage.crafting.ITerminalStorageTabIngredientCraftingHandler;
 import org.cyclops.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentItemStackCraftingCommon;
 import org.cyclops.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentServer;
+import org.cyclops.integratedterminals.core.terminalstorage.crafting.TerminalStorageTabIngredientCraftingHandlers;
 import org.cyclops.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import org.cyclops.integratedterminals.network.packet.TerminalStorageIngredientItemStackCraftingGridClear;
 import org.cyclops.integratedterminalscompat.Reference;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -47,6 +53,8 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
     private boolean maxTransfer;
     private Map<Integer, Pair<ItemStack, Integer>> slottedIngredientsFromPlayer;
     private Map<Integer, List<Pair<ItemStack, Integer>>> slottedIngredientsFromStorage;
+    @CodecField
+    private boolean triggerCraftingJobs;
 
     public TerminalStorageIngredientItemStackCraftingGridSetRecipe() {
         super(ID);
@@ -54,13 +62,15 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
 
     public TerminalStorageIngredientItemStackCraftingGridSetRecipe(String tabId, int channel, boolean maxTransfer,
                                                                    Map<Integer, Pair<ItemStack, Integer>> slottedIngredientsFromPlayer,
-                                                                   Map<Integer, List<Pair<ItemStack, Integer>>> slottedIngredientsFromStorage) {
+                                                                   Map<Integer, List<Pair<ItemStack, Integer>>> slottedIngredientsFromStorage,
+                                                                   boolean triggerCraftingJobs) {
         super(ID);
         this.tabId = tabId;
         this.channel = channel;
         this.maxTransfer = maxTransfer;
         this.slottedIngredientsFromPlayer = slottedIngredientsFromPlayer;
         this.slottedIngredientsFromStorage = slottedIngredientsFromStorage;
+        this.triggerCraftingJobs = triggerCraftingJobs;
     }
 
     @Override
@@ -167,6 +177,31 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
                         }
                         if (!extracted.isEmpty()) {
                             slot.set(extracted);
+                        } else if (this.triggerCraftingJobs) {
+                            // Trigger crafting job if enabled
+                            boolean startedJob = false;
+                            for (ITerminalStorageTabIngredientCraftingHandler handler : TerminalStorageTabIngredientCraftingHandlers.REGISTRY.getHandlers()) {
+                                for (Pair<ItemStack, Integer> stackEntry : entry.getValue()) {
+                                    for (ITerminalCraftingOption<ItemStack> craftingOption : (Collection<ITerminalCraftingOption<ItemStack>>) handler.getCraftingOptionsWithOutput(tabServerCrafting, channel, stackEntry.getLeft(), stackEntry.getRight())) {
+                                        ITerminalCraftingPlan craftingPlan = handler.calculateCraftingPlan(tabServerCrafting.getNetwork(), channel, craftingOption, 1);
+                                        if (craftingPlan.getStatus().isValid()) {
+                                            try {
+                                                handler.startCraftingJob(tabServerCrafting.getNetwork(), channel, craftingPlan, player);
+                                                startedJob = true;
+                                                break;
+                                            } catch (CraftingJobStartException e) {
+                                                // Ignore jobs that could not start
+                                            }
+                                        }
+                                    }
+                                    if (startedJob) {
+                                        break;
+                                    }
+                                }
+                                if (startedJob) {
+                                    break;
+                                }
+                            }
                         }
                     }
                 }

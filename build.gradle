@@ -86,6 +86,14 @@ repositories {
         name 'jared'
         url 'https://maven.blamejared.com/'
     }
+    maven {
+        name "EMI"
+        url "https://maven.terraformersmc.com/"
+    }
+    maven {
+        name "REI"
+        url "https://maven.shedaniel.me/"
+    }
 }
 
 dependencies {
@@ -139,6 +147,14 @@ dependencies {
 
     //runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:${project.curios_version}") // https://maven.theillusivec4.top/top/theillusivec4/curios/curios-forge/
     compileOnly("top.theillusivec4.curios:curios-neoforge:${project.curios_version}:api")
+
+    compileOnly("top.theillusivec4.curios:curios-forge:${project.curios_version}:api")
+
+    compileOnly("dev.emi:emi-neoforge:${emi_version}") // https://maven.terraformersmc.com/releases/dev/emi/emi-neoforge
+
+    compileOnly("me.shedaniel:RoughlyEnoughItems-neoforge:${rei_version}") // https://maven.shedaniel.me/me/shedaniel/RoughlyEnoughItems-neoforge/ or just look on CurseForge by modloader and MC version...
+    implementation("me.shedaniel.cloth:cloth-config-neoforge:$cloth_config_version");
+    implementation("dev.architectury:architectury-neoforge:$architectury_version");
 }
 
 subsystems {
