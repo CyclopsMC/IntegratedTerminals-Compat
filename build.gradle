@@ -83,6 +83,14 @@ repositories {
         name 'jared'
         url 'https://maven.blamejared.com/'
     }
+    maven {
+        name "EMI"
+        url "https://maven.terraformersmc.com/"
+    }
+    maven {
+        name "REI"
+        url "https://maven.shedaniel.me/"
+    }
 }
 
 dependencies {
@@ -133,6 +141,12 @@ dependencies {
 
     //runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:${project.curios_version}") // https://maven.theillusivec4.top/top/theillusivec4/curios/curios-forge/
     compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:${project.curios_version}:api")
+
+    compileOnly fg.deobf("dev.emi:emi-forge:${emi_version}") // https://maven.terraformersmc.com/releases/dev/emi/emi-forge
+
+    compileOnly fg.deobf("me.shedaniel:RoughlyEnoughItems-forge:${rei_version}") // https://maven.shedaniel.me/me/shedaniel/RoughlyEnoughItems-forge/ or just look on CurseForge by modloader and MC version...
+    implementation fg.deobf("me.shedaniel.cloth:cloth-config-forge:$cloth_config_version");
+    implementation fg.deobf("dev.architectury:architectury-forge:$architectury_version");
 }
 
 minecraft {
@@ -143,6 +157,11 @@ minecraft {
             workingDirectory project.file('run')
             //property 'forge.logging.markers', 'REGISTRIES,REGISTRYDUMP'
             property 'forge.logging.console.level', 'debug'
+
+            // Required for EMI
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+
             mods {
                 integratedterminalscompat {
                     source sourceSets.main
@@ -157,6 +176,11 @@ minecraft {
         server {
             workingDirectory project.file('run')
             property 'forge.logging.console.level', 'debug'
+
+            // Required for EMI
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+
             mods {
                 integratedterminalscompat {
                     source sourceSets.main
