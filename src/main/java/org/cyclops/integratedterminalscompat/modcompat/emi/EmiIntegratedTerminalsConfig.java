@@ -1,5 +1,6 @@
 package org.cyclops.integratedterminalscompat.modcompat.emi;
 
+import dev.emi.emi.api.EmiApi;
 import dev.emi.emi.api.EmiEntrypoint;
 import dev.emi.emi.api.EmiPlugin;
 import dev.emi.emi.api.EmiRegistry;
@@ -91,7 +92,7 @@ public class EmiIntegratedTerminalsConfig implements EmiPlugin {
     public void onSearchFieldUpdated(TerminalStorageTabClientSearchFieldUpdateEvent event) {
         // Copy the terminal search box contents into the JEI search box.
         if (!EmiScreenManager.isDisabled() && TerminalButtonItemStackCraftingGridSearchSync.isSearchSynced(event.getClientTab())) {
-            EmiScreenManager.search.setValue(event.getSearchString() + "");
+            EmiApi.setSearchText(event.getSearchString() + "");
         }
     }
 
@@ -100,11 +101,11 @@ public class EmiIntegratedTerminalsConfig implements EmiPlugin {
         // Copy the JEI search box contents into the terminal search box.
         if (event.getScreen() instanceof ContainerScreenTerminalStorage) {
             ContainerScreenTerminalStorage<?, ?> gui = ((ContainerScreenTerminalStorage<?, ?>) event.getScreen());
-            if (!EmiScreenManager.isDisabled() && EmiScreenManager.search.isFocused()) {
+            if (!EmiScreenManager.isDisabled() && EmiApi.isSearchFocused()) {
                 gui.getSelectedClientTab().ifPresent(tab -> {
                     if (TerminalButtonItemStackCraftingGridSearchSync.isSearchSynced(tab)) {
                         WidgetTextFieldExtended fieldSearch = gui.getFieldSearch();
-                        fieldSearch.setValue(EmiScreenManager.search.getValue());
+                        fieldSearch.setValue(EmiApi.getSearchText());
                         tab.setInstanceFilter(gui.getMenu().getSelectedChannel(), fieldSearch.getValue() + "");
                     }
                 });
