@@ -16,10 +16,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
-import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.tuple.Pair;
 import org.cyclops.cyclopscore.datastructure.Wrapper;
-import org.cyclops.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentClient;
 import org.cyclops.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import org.cyclops.integratedterminalscompat.modcompat.common.RecipeTransferHelpers;
 import org.cyclops.integratedterminalscompat.modcompat.common.RecipeTransferResult;
@@ -41,11 +39,9 @@ public class TerminalStorageEmiRecipeHandler<T extends ContainerTerminalStorageB
         T container = screen.getMenu();
         return RecipeTransferHelpers.getTabs(container)
                 .map(tabs -> {
-                    List<TerminalStorageTabIngredientComponentClient.InstanceWithMetadata<ItemStack>> unfilteredIngredients = tabs.getValue()
-                            .getUnfilteredIngredientsView(container.getSelectedChannel());
-                    return new EmiPlayerInventory(unfilteredIngredients.stream()
-                            .filter(ingredient -> ingredient.getCraftingOption() == null)
-                            .map(TerminalStorageTabIngredientComponentClient.InstanceWithMetadata::getInstance)
+                    return new EmiPlayerInventory(tabs.getValue()
+                            .getRawUnfilteredIngredientsView(container.getSelectedChannel())
+                            .stream()
                             .map(EmiStack::of)
                             .collect(Collectors.toList()));
                 })
