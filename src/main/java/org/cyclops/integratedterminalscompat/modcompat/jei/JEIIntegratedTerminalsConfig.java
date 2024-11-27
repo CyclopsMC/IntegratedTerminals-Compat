@@ -70,10 +70,10 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
 
     @Override
     public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
-        registration.addUniversalRecipeTransferHandler(
-                new TerminalStorageRecipeTransferHandler<>(ContainerTerminalStoragePart.class, RegistryEntries.CONTAINER_PART_TERMINAL_STORAGE_PART));
-        registration.addUniversalRecipeTransferHandler(
-                new TerminalStorageRecipeTransferHandler<>(ContainerTerminalStorageItem.class, RegistryEntries.CONTAINER_PART_TERMINAL_STORAGE_ITEM));
+        registration.addRecipeTransferHandler(
+                new TerminalStorageRecipeTransferHandler<>(ContainerTerminalStoragePart.class, RegistryEntries.CONTAINER_PART_TERMINAL_STORAGE_PART), RecipeTypes.CRAFTING);
+        registration.addRecipeTransferHandler(
+                new TerminalStorageRecipeTransferHandler<>(ContainerTerminalStorageItem.class, RegistryEntries.CONTAINER_PART_TERMINAL_STORAGE_ITEM), RecipeTypes.CRAFTING);
     }
 
     @Override
