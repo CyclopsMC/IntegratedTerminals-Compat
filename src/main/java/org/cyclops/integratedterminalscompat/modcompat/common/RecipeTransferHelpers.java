@@ -20,14 +20,12 @@ import org.cyclops.integratedterminals.api.terminalstorage.ITerminalStorageTabCo
 import org.cyclops.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentClient;
 import org.cyclops.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentItemStackCrafting;
 import org.cyclops.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentItemStackCraftingCommon;
+import org.cyclops.integratedterminals.core.terminalstorage.crafting.HandlerWrappedTerminalCraftingOption;
 import org.cyclops.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import org.cyclops.integratedterminalscompat.IntegratedTerminalsCompat;
 import org.cyclops.integratedterminalscompat.network.packet.TerminalStorageIngredientItemStackCraftingGridSetRecipe;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -76,7 +74,7 @@ public class RecipeTransferHelpers {
     }
 
     public static <T extends RecipeInputSlot> Optional<RecipeTransferResult<T>> getMissingItemsUncached(ContainerTerminalStorageBase<?> container, Iterable<T> recipeInputSlots, Player player, TerminalStorageTabIngredientComponentItemStackCraftingCommon tabCommonCrafting, Function<ItemStack, Integer> itemStackToMatchCondition, Consumer<Integer> onChangeId) {
-        TerminalStorageTabIngredientComponentClient tabClient = (TerminalStorageTabIngredientComponentClient)
+        TerminalStorageTabIngredientComponentClient<ItemStack, Integer> tabClient = (TerminalStorageTabIngredientComponentClient<ItemStack, Integer>)
                 container.getTabClient(container.getSelectedTab());
 
         // Check in the player inventory and local client view if the required recipe ingredients are available
@@ -92,20 +90,16 @@ public class RecipeTransferHelpers {
         hayStackPlayer.addAll(player.getInventory().items);
 
         // Build local client view of storage
-        List<TerminalStorageTabIngredientComponentClient.InstanceWithMetadata<ItemStack>> unfilteredIngredients = tabClient
-                .getUnfilteredIngredientsView(container.getSelectedChannel());
         IIngredientCollectionMutable<ItemStack, Integer> hayStack = IngredientCollectionHelpers.createCollapsedCollection(IngredientComponent.ITEMSTACK);
         IIngredientCollectionMutable<ItemStack, Integer> hayStackCraftable = IngredientCollectionHelpers.createCollapsedCollection(IngredientComponent.ITEMSTACK);
-        hayStack.addAll(unfilteredIngredients
-                .stream()
-                .filter(i -> i.getCraftingOption() == null)
-                .map(TerminalStorageTabIngredientComponentClient.InstanceWithMetadata::getInstance)
-                .collect(Collectors.toList()));
-        hayStackCraftable.addAll(unfilteredIngredients
-                .stream()
-                .filter(i -> i.getCraftingOption() != null)
-                .map(TerminalStorageTabIngredientComponentClient.InstanceWithMetadata::getInstance)
-                .collect(Collectors.toList()));
+        hayStack.addAll(tabClient.getRawUnfilteredIngredientsView(container.getSelectedChannel()));
+        Collection<HandlerWrappedTerminalCraftingOption<ItemStack>> craftingOptions = tabClient.getCraftingOptions(container.getSelectedChannel());
+        if (craftingOptions != null) {
+            hayStackCraftable.addAll(craftingOptions
+                    .stream()
+                    .flatMap(option -> tabClient.getUniqueCraftingOptionOutputs(option.getCraftingOption()).stream())
+                    .toList());
+        }
 
         List<T> slotsMissingItems = Lists.newArrayList();
         List<T> slotsMissingCraftableItems = Lists.newArrayList();
