@@ -58,10 +58,14 @@ public class RecipeTransferHelpers {
         return Optional.empty();
     }
 
+    public static int getCurrentChangeId(TerminalStorageTabIngredientComponentClient<?, ?> tabClient, Player player) {
+        return tabClient.getLastChangeId() + player.getInventory().getTimesChanged();
+    }
+
     public static <T extends RecipeInputSlot> Optional<RecipeTransferResult<T>> getMissingItems(Object cacheKey, ContainerTerminalStorageBase<?> container, Iterable<T> recipeInputSlots, Player player, TerminalStorageTabIngredientComponentItemStackCraftingCommon tabCommonCrafting, TerminalStorageTabIngredientComponentClient<?, ?> tabClient, Function<ItemStack, Integer> itemStackToMatchCondition, Supplier<Integer> getId, Consumer<Integer> onChangeId) {
         Callable<Optional<RecipeTransferResult<T>>> missingItemsSupplier =
                 () -> getMissingItemsUncached(container, recipeInputSlots, player, tabCommonCrafting, itemStackToMatchCondition, onChangeId);
-        if (getId.get() != tabClient.getLastChangeId()) {
+        if (getId.get() != getCurrentChangeId(tabClient, player)) {
             // Clear cache when storage contents changed
             recipeErrorCache.invalidateAll();
         }
@@ -147,7 +151,7 @@ public class RecipeTransferHelpers {
             }
         }
 
-        onChangeId.accept(tabClient.getLastChangeId());
+        onChangeId.accept(getCurrentChangeId(tabClient, player));
         if (!slotsMissingItems.isEmpty() || !slotsMissingCraftableItems.isEmpty()) {
             return Optional.of(new RecipeTransferResult<T>(slotsMissingItems, slotsMissingCraftableItems));
         }
