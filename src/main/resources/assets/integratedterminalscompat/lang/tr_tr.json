@@ -1,1 +1,14 @@
-{}
+{
+  "_comment": "Gui",
+  "gui.integratedterminalscompat.terminal_storage.craftinggrid.jeisync": "JEI Arama Senkronizasyonu",
+  "gui.integratedterminalscompat.terminal_storage.craftinggrid.jeisync.info": "Arama kutusunu JEI ile senkronize et.",
+  "gui.integratedterminalscompat.terminal_storage.craftinggrid.emisync": "EMI Arama Senkronizasyonu",
+  "gui.integratedterminalscompat.terminal_storage.craftinggrid.emisync.info": "Arama kutusunu EMI ile senkronize et.",
+  "gui.integratedterminalscompat.terminal_storage.craftinggrid.reisync": "REI Arama Senkronizasyonu",
+  "gui.integratedterminalscompat.terminal_storage.craftinggrid.reisync.info": "Arama kutusunu REI ile senkronize et.",
+  "gui.integratedterminalscompat.terminal_storage.jei.transfer.craftable": "Oto-üretilebilir eşyalar",
+  "gui.integratedterminalscompat.terminal_storage.jei.transfer.craftable_partial": "Kısmen oto-üretilebilir eşyalar",
+  "gui.integratedterminalscompat.terminal_storage.jei.transfer.missing": "Eksik eşyalar",
+  "gui.integratedterminalscompat.terminal_storage.jei.transfer.craft.info": "Otomatik üretimi tetiklemek için Ctrl+tıkla",
+  "gui.integratedterminalscompat.terminal_storage.jei.transfer.craft.info_cmd": "Otomatik üretimi tetiklemek için Cmd+tıkla"
+}
