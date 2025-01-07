@@ -1,1 +1,14 @@
-{}
+{
+  "_comment": "GUI",
+  "gui.integratedterminalscompat.terminal_storage.craftinggrid.jeisync": "JEI zoeken synchroniseren",
+  "gui.integratedterminalscompat.terminal_storage.craftinggrid.jeisync.info": "Synchroniseer het zoekvak met JEI.",
+  "gui.integratedterminalscompat.terminal_storage.craftinggrid.emisync": "EMI zoeken synchroniseren",
+  "gui.integratedterminalscompat.terminal_storage.craftinggrid.emisync.info": "Synchroniseer het zoekvak met EMI.",
+  "gui.integratedterminalscompat.terminal_storage.craftinggrid.reisync": "REI zoeken synchroniseren",
+  "gui.integratedterminalscompat.terminal_storage.craftinggrid.reisync.info": "Synchroniseer het zoekvak met REI.",
+  "gui.integratedterminalscompat.terminal_storage.jei.transfer.craftable": "Automatisch vervaardigbare voorwerpen",
+  "gui.integratedterminalscompat.terminal_storage.jei.transfer.craftable_partial": "Gedeeltelijk automatisch vervaardigbare voorwerpen",
+  "gui.integratedterminalscompat.terminal_storage.jei.transfer.missing": "Ontbrekende voorwerpen",
+  "gui.integratedterminalscompat.terminal_storage.jei.transfer.craft.info": "Ctrl+klik om automatische vervaardiging te starten",
+  "gui.integratedterminalscompat.terminal_storage.jei.transfer.craft.info_cmd": "Cmd+klik om automatische vervaardiging te starten"
+}
