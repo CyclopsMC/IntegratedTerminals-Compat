@@ -155,8 +155,10 @@ public class TerminalStorageEmiRecipeHandler<T extends ContainerTerminalStorageB
                         }
 
                         // Render overlay on button
-                        Bounds bounds = fillButton.get().getBounds();
-                        GuiComponent.fill(matrices, bounds.x(), bounds.y(), bounds.x() + bounds.width(), bounds.y() + bounds.height(), transferResult.getButtonHighlightColor());
+                        if (fillButton.get() != null) {
+                            Bounds bounds = fillButton.get().getBounds();
+                            GuiComponent.fill(matrices, bounds.x(), bounds.y(), bounds.x() + bounds.width(), bounds.y() + bounds.height(), transferResult.getButtonHighlightColor());
+                        }
                     });
                 });
     }
