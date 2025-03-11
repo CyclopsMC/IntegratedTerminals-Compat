@@ -4,6 +4,7 @@ import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.RecipeTypes;
 import mezz.jei.api.constants.VanillaTypes;
+import mezz.jei.api.ingredients.subtypes.IIngredientSubtypeInterpreter;
 import mezz.jei.api.ingredients.subtypes.ISubtypeManager;
 import mezz.jei.api.ingredients.subtypes.UidContext;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
@@ -60,7 +61,7 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
         // So if we would run into problems with this, this filtering is what we'd need to do.
 
         String subTypeInfo = JEIIntegratedTerminalsConfig.subTypeManager.getSubtypeInfo(VanillaTypes.ITEM_STACK, itemStack, UidContext.Ingredient);
-        return subTypeInfo == null ? ItemMatch.ITEM : ItemMatch.ITEM | ItemMatch.DATA;
+        return IIngredientSubtypeInterpreter.NONE.equals(subTypeInfo) ? ItemMatch.ITEM : ItemMatch.ITEM | ItemMatch.DATA;
     }
 
     @Override
