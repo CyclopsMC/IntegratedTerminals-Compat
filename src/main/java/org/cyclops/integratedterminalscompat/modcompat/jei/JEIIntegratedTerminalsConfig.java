@@ -18,6 +18,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.cyclops.commoncapabilities.api.capability.itemhandler.ItemMatch;
 import org.cyclops.cyclopscore.client.gui.component.input.WidgetTextFieldExtended;
@@ -140,20 +141,30 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
         }
     }
 
+    protected void syncJeiSearchBox(ContainerScreenTerminalStorage<?, ?> screen) {
+        // Copy the JEI search box contents into the terminal search box.
+        if (jeiRuntime != null && jeiRuntime.getIngredientListOverlay().hasKeyboardFocus()) {
+            screen.getSelectedClientTab().ifPresent(tab -> {
+                if (TerminalButtonItemStackCraftingGridSearchSync.isSearchSynced(tab)) {
+                    WidgetTextFieldExtended fieldSearch = screen.getFieldSearch();
+                    fieldSearch.setValue(jeiRuntime.getIngredientFilter().getFilterText());
+                    tab.setInstanceFilter(screen.getMenu().getSelectedChannel(), fieldSearch.getValue() + "");
+                }
+            });
+        }
+    }
+
     @SubscribeEvent
     public void onKeyTyped(ScreenEvent.KeyReleased.Post event) {
-        // Copy the JEI search box contents into the terminal search box.
-        if (event.getScreen() instanceof ContainerScreenTerminalStorage) {
-            ContainerScreenTerminalStorage<?, ?> gui = ((ContainerScreenTerminalStorage<?, ?>) event.getScreen());
-            if (jeiRuntime != null && jeiRuntime.getIngredientListOverlay().hasKeyboardFocus()) {
-                gui.getSelectedClientTab().ifPresent(tab -> {
-                    if (TerminalButtonItemStackCraftingGridSearchSync.isSearchSynced(tab)) {
-                        WidgetTextFieldExtended fieldSearch = gui.getFieldSearch();
-                        fieldSearch.setValue(jeiRuntime.getIngredientFilter().getFilterText());
-                        tab.setInstanceFilter(gui.getMenu().getSelectedChannel(), fieldSearch.getValue() + "");
-                    }
-                });
-            }
+        if (event.getScreen() instanceof ContainerScreenTerminalStorage<?, ?> screen) {
+            syncJeiSearchBox(screen);
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public void onMouseClicked(ScreenEvent.MouseButtonReleased.Pre event) {
+        if (event.getScreen() instanceof ContainerScreenTerminalStorage<?, ?> screen) {
+            Minecraft.getInstance().tell(() -> syncJeiSearchBox(screen));
         }
     }
 }
