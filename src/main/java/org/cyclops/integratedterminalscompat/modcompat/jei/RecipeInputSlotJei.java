@@ -23,6 +23,11 @@ public class RecipeInputSlotJei implements RecipeInputSlot {
     }
 
     @Override
+    public boolean isInput() {
+        return this.slotView.getRole() == RecipeIngredientRole.INPUT;
+    }
+
+    @Override
     public boolean isEmpty() {
         return this.slotView.getRole() != RecipeIngredientRole.INPUT || this.slotView.isEmpty();
     }

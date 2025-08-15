@@ -23,6 +23,11 @@ public class RecipeInputSlotRei implements RecipeInputSlot {
         this.index = index;
     }
 
+    @Override
+    public boolean isInput() {
+        return input;
+    }
+
     public int getIndex() {
         return index;
     }
