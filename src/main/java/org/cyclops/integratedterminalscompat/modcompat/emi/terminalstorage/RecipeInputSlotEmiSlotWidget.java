@@ -37,6 +37,11 @@ public class RecipeInputSlotEmiSlotWidget implements RecipeInputSlot {
     }
 
     @Override
+    public boolean isInput() {
+        return true;
+    }
+
+    @Override
     public boolean isEmpty() {
         return slotWidget.getRecipe() != null || slotWidget.getStack().isEmpty();
     }

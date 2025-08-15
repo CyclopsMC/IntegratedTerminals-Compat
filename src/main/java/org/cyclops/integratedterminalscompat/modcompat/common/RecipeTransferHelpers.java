@@ -166,40 +166,42 @@ public class RecipeTransferHelpers {
         // Send a packet to the server if the recipe effectively needs to be applied to the grid
         Map<Integer, Pair<ItemStack, Integer>> slottedIngredientsFromPlayer = Maps.newHashMap();
         Map<Integer, List<Pair<ItemStack, Integer>>> slottedIngredientsFromStorage = Maps.newHashMap();
-        int slotOffset = tabCommonCrafting.getSlotCrafting().index;
+        int slotOffset = tabCommonCrafting.getSlotCrafting().index + 1;
         int slotId = 0;
         for (T recipeSlot : recipeInputSlots) {
-            if (!recipeSlot.isEmpty()) {
-                boolean found = false;
+            if (recipeSlot.isInput()) {
+                if (!recipeSlot.isEmpty()) {
+                    boolean found = false;
 
-                // First check if we can transfer from the player inventory
-                // No need to check the crafting grid, as the server will first clear the grid into the storage in TerminalStorageIngredientItemStackCraftingGridSetRecipe
-                for (ItemStack itemStack : recipeSlot) {
-                    int matchCondition = itemStackToMatchCondition.apply(itemStack);
+                    // First check if we can transfer from the player inventory
+                    // No need to check the crafting grid, as the server will first clear the grid into the storage in TerminalStorageIngredientItemStackCraftingGridSetRecipe
+                    for (ItemStack itemStack : recipeSlot) {
+                        int matchCondition = itemStackToMatchCondition.apply(itemStack);
 
-                    if (!playerInventory.extract(itemStack, matchCondition, true).isEmpty()) {
-                        found = true;
+                        if (!playerInventory.extract(itemStack, matchCondition, true).isEmpty()) {
+                            found = true;
 
-                        // Move from player to crafting grid
-                        ItemStack extracted = playerInventory.extract(itemStack, matchCondition, false);
-                        Slot slot = container.getSlot(slotId + slotOffset);
-                        slot.set(extracted);
+                            // Move from player to crafting grid
+                            ItemStack extracted = playerInventory.extract(itemStack, matchCondition, false);
+                            Slot slot = container.getSlot(slotId + slotOffset);
+                            slot.set(extracted);
 
-                        // Do the exact same thing server-side
-                        slottedIngredientsFromPlayer.put(slotId, Pair.of(itemStack, itemStackToMatchCondition.apply(itemStack)));
+                            // Do the exact same thing server-side
+                            slottedIngredientsFromPlayer.put(slotId, Pair.of(itemStack, itemStackToMatchCondition.apply(itemStack)));
 
-                        break;
+                            break;
+                        }
+                    }
+
+                    if (!found) {
+                        // Otherwise, request them from the storage
+                        slottedIngredientsFromStorage.put(slotId, Streams.stream(recipeSlot)
+                                .map(itemStack -> Pair.of(itemStack, itemStackToMatchCondition.apply(itemStack)))
+                                .collect(Collectors.toList()));
                     }
                 }
-
-                if (!found) {
-                    // Otherwise, request them from the storage
-                    slottedIngredientsFromStorage.put(slotId, Streams.stream(recipeSlot)
-                            .map(itemStack -> Pair.of(itemStack, itemStackToMatchCondition.apply(itemStack)))
-                            .collect(Collectors.toList()));
-                }
+                slotId++;
             }
-            slotId++;
         }
 
         IntegratedTerminalsCompat._instance.getPacketHandler().sendToServer(
