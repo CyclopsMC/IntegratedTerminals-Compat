@@ -1,12 +1,10 @@
 package org.cyclops.integratedterminalscompat;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import org.apache.logging.log4j.Level;
-import org.cyclops.cyclopscore.config.ConfigHandler;
-import org.cyclops.cyclopscore.init.ModBaseVersionable;
+import org.cyclops.cyclopscore.config.ConfigHandlerCommon;
+import org.cyclops.cyclopscore.init.ModBaseNeoForge;
 import org.cyclops.cyclopscore.proxy.IClientProxy;
 import org.cyclops.cyclopscore.proxy.ICommonProxy;
 import org.cyclops.integratedterminalscompat.proxy.ClientProxy;
@@ -18,7 +16,7 @@ import org.cyclops.integratedterminalscompat.proxy.CommonProxy;
  *
  */
 @Mod(Reference.MOD_ID)
-public class IntegratedTerminalsCompat extends ModBaseVersionable<IntegratedTerminalsCompat> {
+public class IntegratedTerminalsCompat extends ModBaseNeoForge<IntegratedTerminalsCompat> {
 
     public static IntegratedTerminalsCompat _instance;
 
@@ -32,13 +30,12 @@ public class IntegratedTerminalsCompat extends ModBaseVersionable<IntegratedTerm
     }
 
     @Override
-    protected void onConfigsRegister(ConfigHandler configHandler) {
+    protected void onConfigsRegister(ConfigHandlerCommon configHandler) {
         super.onConfigsRegister(configHandler);
 
         configHandler.addConfigurable(new GeneralConfig());
     }
 
-    @OnlyIn(Dist.CLIENT)
     @Override
     protected IClientProxy constructClientProxy() {
         return new ClientProxy();

@@ -1,6 +1,6 @@
 plugins {
-	id 'net.neoforged.gradle.userdev' version '7.0.145'
-    id 'net.darkhax.curseforgegradle' version '1.0.8'
+	id 'net.neoforged.gradle.userdev' version '7.0.185'
+    id 'net.darkhax.curseforgegradle' version '1.1.26'
 	id 'com.github.kt3k.coveralls' version '2.8.2'
     id 'com.diffplug.spotless' version '6.25.0'
 }
@@ -147,15 +147,13 @@ dependencies {
     implementation("mezz.jei:jei-${project.jei_version}") // https://maven.blamejared.com/mezz/jei/ https://dvs1.progwml6.com/jenkins/
 
     //runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:${project.curios_version}") // https://maven.theillusivec4.top/top/theillusivec4/curios/curios-forge/
-    compileOnly("top.theillusivec4.curios:curios-neoforge:${project.curios_version}:api")
-
-    compileOnly("top.theillusivec4.curios:curios-forge:${project.curios_version}:api")
+    compileOnly("top.theillusivec4.curios:curios-neoforge:${project.curios_version}:api") // https://maven.theillusivec4.top/top/theillusivec4/curios/curios-neoforge/
 
     compileOnly("dev.emi:emi-neoforge:${emi_version}") // https://maven.terraformersmc.com/releases/dev/emi/emi-neoforge
 
     compileOnly("me.shedaniel:RoughlyEnoughItems-neoforge:${rei_version}") // https://maven.shedaniel.me/me/shedaniel/RoughlyEnoughItems-neoforge/ or just look on CurseForge by modloader and MC version...
-    implementation("me.shedaniel.cloth:cloth-config-neoforge:$cloth_config_version");
-    implementation("dev.architectury:architectury-neoforge:$architectury_version");
+    implementation("me.shedaniel.cloth:cloth-config-neoforge:$cloth_config_version"); // https://maven.shedaniel.me/me/shedaniel/cloth/cloth-config-neoforge/
+    implementation("dev.architectury:architectury-neoforge:$architectury_version"); // https://maven.shedaniel.me/dev/architectury/architectury-neoforge/
 }
 
 subsystems {
@@ -183,15 +181,15 @@ runs {
 
     server {
         systemProperty 'neoforge.enabledGameTestNamespaces', "cyclopscore,${mod_id}"
-        programArgument '--nogui'
+        argument '--nogui'
     }
 
     gameTestServer {
         systemProperty 'neoforge.enabledGameTestNamespaces', "cyclopscore,${mod_id}"
     }
 
-    data {
-        programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+    clientData {
+        arguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
     }
 }
 
@@ -316,9 +314,22 @@ idea {
 }
 
 jacocoTestReport {
+    // Include unit and game test coverage
+    executionData fileTree(project.buildDir).include("jacoco/*.exec")
     reports {
         xml.required = true
         html.required = true
+    }
+}
+
+// Also measure coverage for game tests
+tasks.whenTaskAdded { task ->
+    if (task.name.equals('runGameTestServer')) {
+        jacocoTestReport.dependsOn test, task
+        jacoco {
+            toolVersion = "0.8.12"
+            applyTo task
+        }
     }
 }
 

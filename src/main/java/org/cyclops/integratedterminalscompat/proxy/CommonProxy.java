@@ -1,7 +1,7 @@
 package org.cyclops.integratedterminalscompat.proxy;
 
-import org.cyclops.cyclopscore.init.ModBase;
-import org.cyclops.cyclopscore.network.PacketHandler;
+import org.cyclops.cyclopscore.init.ModBaseNeoForge;
+import org.cyclops.cyclopscore.network.IPacketHandler;
 import org.cyclops.cyclopscore.proxy.CommonProxyComponent;
 import org.cyclops.integratedterminalscompat.IntegratedTerminalsCompat;
 import org.cyclops.integratedterminalscompat.network.packet.TerminalStorageIngredientItemStackCraftingGridSetRecipe;
@@ -14,14 +14,14 @@ import org.cyclops.integratedterminalscompat.network.packet.TerminalStorageIngre
 public class CommonProxy extends CommonProxyComponent {
 
     @Override
-    public ModBase getMod() {
+    public ModBaseNeoForge<?> getMod() {
         return IntegratedTerminalsCompat._instance;
     }
 
     @Override
-    public void registerPacketHandlers(PacketHandler packetHandler) {
-        super.registerPacketHandlers(packetHandler);
+    public void registerPackets(IPacketHandler packetHandler) {
+        super.registerPackets(packetHandler);
 
-        packetHandler.register(TerminalStorageIngredientItemStackCraftingGridSetRecipe.ID, TerminalStorageIngredientItemStackCraftingGridSetRecipe.CODEC);
+        packetHandler.register(TerminalStorageIngredientItemStackCraftingGridSetRecipe.class, TerminalStorageIngredientItemStackCraftingGridSetRecipe.ID, TerminalStorageIngredientItemStackCraftingGridSetRecipe.CODEC);
     }
 }

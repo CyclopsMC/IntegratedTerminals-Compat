@@ -32,15 +32,18 @@ public class RecipeTransferErrorTransferResult implements IRecipeTransferError {
 
     @Override
     public void showError(GuiGraphics guiGraphics, int mouseX, int mouseY, IRecipeSlotsView recipeSlotsView, int recipeX, int recipeY) {
-        guiGraphics.renderComponentTooltip(Minecraft.getInstance().font, Stream.concat(Stream.of(Component.translatable("jei.tooltip.transfer")), this.result.getMessage().stream()).toList(), mouseX, mouseY);
-        guiGraphics.pose().pushPose();
-        guiGraphics.pose().translate(recipeX, recipeY, 0.0);
+        guiGraphics.setTooltipForNextFrame(Minecraft.getInstance().font, Stream
+                .concat(Stream.of(Component.translatable("jei.tooltip.transfer")), this.result.getMessage().stream())
+                .map(Component::getVisualOrderText)
+                .toList(), mouseX, mouseY);
+        guiGraphics.pose().pushMatrix();
+        guiGraphics.pose().translate(recipeX, recipeY);
         for (RecipeInputSlotJei slot : this.result.getSlotsMissing()) {
             slot.getSlotView().drawHighlight(guiGraphics, RecipeTransferResult.SLOT_COLOR_MISSING);
         }
         for (RecipeInputSlotJei slot : this.result.getSlotsCraftable()) {
             slot.getSlotView().drawHighlight(guiGraphics, RecipeTransferResult.SLOT_COLOR_CRAFTABLE);
         }
-        guiGraphics.pose().popPose();
+        guiGraphics.pose().popMatrix();
     }
 }

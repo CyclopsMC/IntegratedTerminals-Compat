@@ -6,9 +6,9 @@ import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.ingredient.IRecipeSlotView;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.recipe.RecipeIngredientRole;
-import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
+import mezz.jei.api.recipe.types.IRecipeHolderType;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
@@ -54,7 +54,7 @@ public class TerminalStorageRecipeTransferHandler<T extends ContainerTerminalSto
     }
 
     @Override
-    public RecipeType<RecipeHolder<CraftingRecipe>> getRecipeType() {
+    public IRecipeHolderType<CraftingRecipe> getRecipeType() {
         return RecipeTypes.CRAFTING;
     }
 

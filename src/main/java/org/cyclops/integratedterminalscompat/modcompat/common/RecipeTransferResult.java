@@ -2,7 +2,7 @@ package org.cyclops.integratedterminalscompat.modcompat.common;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import org.cyclops.cyclopscore.helper.Helpers;
+import net.minecraft.util.ARGB;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,12 +15,12 @@ public class RecipeTransferResult<T extends RecipeInputSlot> {
 
     public static final boolean HAS_CMD = System.getProperty("os.name").equals("Mac OS X");
 
-    public static final int SLOT_COLOR_MISSING = Helpers.RGBAToInt(255, 0, 0, 100);
-    public static final int SLOT_COLOR_CRAFTABLE = Helpers.RGBAToInt(0, 0, 255, 100);
+    public static final int SLOT_COLOR_MISSING = ARGB.color(100, 255, 0, 0);
+    public static final int SLOT_COLOR_CRAFTABLE = ARGB.color(100, 0, 0, 255);
 
-    public static final int HIGHLIGHT_COLOR_FAIL = Helpers.RGBAToInt(255, 0, 0, 100);
-    public static final int HIGHLIGHT_COLOR_CRAFTABLE = Helpers.RGBAToInt(0, 0, 255, 100);
-    public static final int HIGHLIGHT_COLOR_CRAFTABLE_PARTIAL = Helpers.RGBAToInt(255, 125, 0, 100);
+    public static final int HIGHLIGHT_COLOR_FAIL = ARGB.color(100, 255, 0, 0);
+    public static final int HIGHLIGHT_COLOR_CRAFTABLE = ARGB.color(100, 0, 0, 255);
+    public static final int HIGHLIGHT_COLOR_CRAFTABLE_PARTIAL = ARGB.color(100, 255, 125, 0);
 
     private final List<Component> message = new ArrayList<>();
     private final Collection<T> slotsMissing;

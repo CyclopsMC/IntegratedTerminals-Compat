@@ -1,5 +1,6 @@
 package org.cyclops.integratedterminalscompat.modcompat.jei.terminalstorage;
 
+import mezz.jei.api.gui.builder.IClickableIngredientFactory;
 import mezz.jei.api.gui.handlers.IGuiContainerHandler;
 import mezz.jei.api.ingredients.IIngredientType;
 import mezz.jei.api.ingredients.ITypedIngredient;
@@ -23,7 +24,11 @@ public class TerminalStorageGuiHandler implements IGuiContainerHandler<Container
 
     @Override
     public @NotNull Optional<IClickableIngredient<?>> getClickableIngredientUnderMouse(
-            @NotNull ContainerScreenTerminalStorage<?, ?> containerScreen, double mouseX, double mouseY) {
+            IClickableIngredientFactory builder,
+            @NotNull ContainerScreenTerminalStorage<?, ?> containerScreen,
+            double mouseX,
+            double mouseY
+    ) {
         Optional<? extends IClickableIngredient<?>> clickableIngredientOptional =
                 createClickableIngredient(containerScreen, mouseX,  mouseY);
         return clickableIngredientOptional.map((clickableIngredient) -> (IClickableIngredient<?>) clickableIngredient);
@@ -46,7 +51,7 @@ public class TerminalStorageGuiHandler implements IGuiContainerHandler<Container
             if (instanceOptional.isPresent() && ingredientTypeOptional.isPresent()) {
                 Rect2i slotRect = containerScreen.getStorageSlotRect(slotIndex);
                 Optional<ITypedIngredient<T>> typedIngredientOptional = ingredientManager
-                        .createTypedIngredient(ingredientTypeOptional.get(), instanceOptional.get());
+                        .createTypedIngredient(ingredientTypeOptional.get(), instanceOptional.get(), true);
                 return typedIngredientOptional
                         .map((typedIngredient) -> new ClickableIngredient<>(typedIngredient, slotRect));
             }

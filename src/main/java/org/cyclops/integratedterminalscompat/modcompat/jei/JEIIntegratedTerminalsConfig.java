@@ -4,7 +4,6 @@ import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.RecipeTypes;
 import mezz.jei.api.constants.VanillaTypes;
-import mezz.jei.api.ingredients.subtypes.IIngredientSubtypeInterpreter;
 import mezz.jei.api.ingredients.subtypes.ISubtypeManager;
 import mezz.jei.api.ingredients.subtypes.UidContext;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
@@ -35,6 +34,7 @@ import org.cyclops.integratedterminalscompat.Reference;
 import org.cyclops.integratedterminalscompat.modcompat.common.button.TerminalButtonItemStackCraftingGridSearchSync;
 import org.cyclops.integratedterminalscompat.modcompat.jei.terminalstorage.TerminalStorageGuiHandler;
 import org.cyclops.integratedterminalscompat.modcompat.jei.terminalstorage.TerminalStorageRecipeTransferHandler;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Helper for registering JEI manager.
@@ -61,8 +61,8 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
         // but just using the heuristic that the existence of sub type info implies NBT matching seems to work out so far.
         // So if we would run into problems with this, this filtering is what we'd need to do.
 
-        String subTypeInfo = JEIIntegratedTerminalsConfig.subTypeManager.getSubtypeInfo(VanillaTypes.ITEM_STACK, itemStack, UidContext.Ingredient);
-        return IIngredientSubtypeInterpreter.NONE.equals(subTypeInfo) ? ItemMatch.ITEM : ItemMatch.ITEM | ItemMatch.DATA;
+        @Nullable Object subTypeInfo = JEIIntegratedTerminalsConfig.subTypeManager.getSubtypeData(VanillaTypes.ITEM_STACK, itemStack, UidContext.Ingredient);
+        return subTypeInfo == null ? ItemMatch.ITEM : ItemMatch.ITEM | ItemMatch.DATA;
     }
 
     @Override
@@ -88,7 +88,7 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
 
     @Override
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
-        registration.addRecipeCatalyst(new ItemStack(PartTypes.TERMINAL_STORAGE.getItem()), RecipeTypes.CRAFTING);
+        registration.addCraftingStation(RecipeTypes.CRAFTING, new ItemStack(PartTypes.TERMINAL_STORAGE.getItem()));
     }
 
     @Override
@@ -164,7 +164,7 @@ public class JEIIntegratedTerminalsConfig implements IModPlugin {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onMouseClicked(ScreenEvent.MouseButtonReleased.Pre event) {
         if (event.getScreen() instanceof ContainerScreenTerminalStorage<?, ?> screen) {
-            Minecraft.getInstance().tell(() -> syncJeiSearchBox(screen));
+            Minecraft.getInstance().schedule(() -> syncJeiSearchBox(screen));
         }
     }
 }

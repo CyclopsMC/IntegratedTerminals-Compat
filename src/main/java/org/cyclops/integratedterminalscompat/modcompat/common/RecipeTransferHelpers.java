@@ -91,7 +91,7 @@ public class RecipeTransferHelpers {
 
         // Build player inventory index
         IIngredientCollectionMutable<ItemStack, Integer> hayStackPlayer = new IngredientCollectionPrototypeMap<>(IngredientComponent.ITEMSTACK);
-        hayStackPlayer.addAll(player.getInventory().items);
+        hayStackPlayer.addAll(player.getInventory().getNonEquipmentItems());
 
         // Build local client view of storage
         IIngredientCollectionMutable<ItemStack, Integer> hayStack = IngredientCollectionHelpers.createCollapsedCollection(IngredientComponent.ITEMSTACK);

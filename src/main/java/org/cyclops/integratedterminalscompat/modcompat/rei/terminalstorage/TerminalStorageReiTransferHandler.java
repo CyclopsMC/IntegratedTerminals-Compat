@@ -17,7 +17,7 @@ import org.cyclops.integratedterminals.inventory.container.ContainerTerminalStor
 import org.cyclops.integratedterminalscompat.modcompat.common.RecipeTransferHelpers;
 import org.cyclops.integratedterminalscompat.modcompat.common.RecipeTransferResult;
 import org.cyclops.integratedterminalscompat.modcompat.rei.RecipeInputSlotRei;
-import org.cyclops.integratedterminalscompat.modcompat.rei.ReiIntegratedTerminalsConfig;
+import org.cyclops.integratedterminalscompat.modcompat.rei.ReiIntegratedTerminalsConfigCommon;
 
 import java.util.Collection;
 import java.util.Objects;
@@ -32,7 +32,7 @@ public class TerminalStorageReiTransferHandler implements TransferHandler {
     @Override
     public Result handle(Context context) {
         if (context.getDisplay().getCategoryIdentifier().equals(BuiltinPlugin.CRAFTING) &&
-                context.getDisplay() instanceof DefaultCraftingDisplay<?> displayCrafting &&
+                context.getDisplay() instanceof DefaultCraftingDisplay displayCrafting &&
                 context.getMenu() instanceof ContainerTerminalStorageBase<?> container &&
                 Objects.equals(container.getSelectedTab(), TerminalStorageTabIngredientComponentItemStackCrafting.NAME.toString())) {
             ITerminalStorageTabCommon tabCommon = container.getTabCommon(container.getSelectedTab());
@@ -45,7 +45,7 @@ public class TerminalStorageReiTransferHandler implements TransferHandler {
                         getRecipeInputSlots(displayCrafting),
                         context.getMinecraft().player,
                         tabCommonCrafting,
-                        ReiIntegratedTerminalsConfig::getItemStackMatchCondition,
+                        ReiIntegratedTerminalsConfigCommon::getItemStackMatchCondition,
                         context.isStackedCrafting()
                 );
                 return Result.createSuccessful().blocksFurtherHandling();
@@ -53,13 +53,13 @@ public class TerminalStorageReiTransferHandler implements TransferHandler {
                 TerminalStorageTabIngredientComponentClient tabClient = (TerminalStorageTabIngredientComponentClient)
                         container.getTabClient(container.getSelectedTab());
                 return RecipeTransferHelpers.getMissingItems(
-                                displayCrafting.getOptionalRecipe().orElse(null),
+                                displayCrafting.getDisplayLocation().orElse(null),
                                 container,
                                 getRecipeInputSlots(displayCrafting),
                                 context.getMinecraft().player,
                                 tabCommonCrafting,
                                 tabClient,
-                                ReiIntegratedTerminalsConfig::getItemStackMatchCondition,
+                                ReiIntegratedTerminalsConfigCommon::getItemStackMatchCondition,
                                 () -> previousChangeId,
                                 id -> previousChangeId = id
                         ).map(transferResult -> Result.createSuccessful()
@@ -87,10 +87,10 @@ public class TerminalStorageReiTransferHandler implements TransferHandler {
                                             // Draw the highlight
                                             if (color != -1) {
                                                 Rectangle bounds = widgetSlot.getInnerBounds();
-                                                guiGraphics.pose().pushPose();
-                                                guiGraphics.pose().translate(0, 0, 20);
+                                                guiGraphics.pose().pushMatrix();
+                                                guiGraphics.pose().translate(0, 0);
                                                 guiGraphics.fill(bounds.x, bounds.y, bounds.getMaxX(), bounds.getMaxY(), color);
-                                                guiGraphics.pose().popPose();
+                                                guiGraphics.pose().popMatrix();
                                             }
 
                                             index++;
@@ -105,7 +105,7 @@ public class TerminalStorageReiTransferHandler implements TransferHandler {
         return Result.createNotApplicable();
     }
 
-    private Collection<RecipeInputSlotRei> getRecipeInputSlots(DefaultCraftingDisplay<?> context) {
+    private Collection<RecipeInputSlotRei> getRecipeInputSlots(DefaultCraftingDisplay context) {
         Collection<RecipeInputSlotRei> recipeInputSlots = Lists.newArrayList();
         for (EntryIngredient outputEntry : context.getOutputEntries()) {
             recipeInputSlots.add(new RecipeInputSlotRei(outputEntry, false, 0));
