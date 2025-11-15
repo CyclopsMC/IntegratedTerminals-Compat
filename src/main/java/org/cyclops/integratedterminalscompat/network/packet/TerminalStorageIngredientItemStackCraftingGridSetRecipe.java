@@ -138,7 +138,7 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
                         (TerminalStorageTabIngredientComponentServer<ItemStack, Integer>) container.getTabServer(tabId);
                 TerminalStorageTabIngredientComponentItemStackCraftingCommon tabCommonCrafting =
                         (TerminalStorageTabIngredientComponentItemStackCraftingCommon) tabCommon;
-                int slotOffset = tabCommonCrafting.getSlotCrafting().index;
+                int slotOffset = tabCommonCrafting.getSlotCrafting().index + 1;
 
                 // Clear current grid into storage
                 TerminalStorageIngredientItemStackCraftingGridClear.clearGrid(tabCommonCrafting, tabServerCrafting,

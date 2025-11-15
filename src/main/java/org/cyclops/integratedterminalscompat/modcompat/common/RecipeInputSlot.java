@@ -7,6 +7,8 @@ import net.minecraft.world.item.ItemStack;
  */
 public interface RecipeInputSlot extends Iterable<ItemStack> {
 
+    public boolean isInput();
+
     public boolean isEmpty();
 
 }

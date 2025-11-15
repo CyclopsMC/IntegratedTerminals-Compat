@@ -22,6 +22,11 @@ public class RecipeInputSlotEmiIngredient implements RecipeInputSlot {
         this.input = input;
     }
 
+    @Override
+    public boolean isInput() {
+        return input;
+    }
+
     @NotNull
     @Override
     public Iterator<ItemStack> iterator() {
