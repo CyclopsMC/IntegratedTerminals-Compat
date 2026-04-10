@@ -4,17 +4,18 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.items.wrapper.InvWrapper;
+import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
 import org.apache.commons.lang3.tuple.Pair;
+import org.cyclops.commoncapabilities.api.capability.itemhandler.DefaultSlotlessItemHandlerWrapper;
 import org.cyclops.commoncapabilities.api.ingredient.IngredientComponent;
 import org.cyclops.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
-import org.cyclops.commoncapabilities.ingredient.storage.IngredientComponentStorageWrapperHandlerItemStack;
+import org.cyclops.commoncapabilities.ingredient.storage.IngredientComponentStorageWrapperHandlerItemStackSlotless;
 import org.cyclops.cyclopscore.network.CodecField;
 import org.cyclops.cyclopscore.network.PacketCodec;
 import org.cyclops.integratedterminals.api.terminalstorage.ITerminalStorageTabCommon;
@@ -40,7 +41,7 @@ import java.util.Map;
  */
 public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends PacketCodec<TerminalStorageIngredientItemStackCraftingGridSetRecipe> {
 
-    public static final Type<TerminalStorageIngredientItemStackCraftingGridSetRecipe> ID = new Type<>(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "terminal_storage_ingredient_itemstack_crafting_grid_set_recipe"));
+    public static final Type<TerminalStorageIngredientItemStackCraftingGridSetRecipe> ID = new Type<>(Identifier.fromNamespaceAndPath(Reference.MOD_ID, "terminal_storage_ingredient_itemstack_crafting_grid_set_recipe"));
     public static final StreamCodec<RegistryFriendlyByteBuf, TerminalStorageIngredientItemStackCraftingGridSetRecipe> CODEC = getCodec(TerminalStorageIngredientItemStackCraftingGridSetRecipe::new);
 
     @CodecField
@@ -147,8 +148,8 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
                 // Try filling the grid with the given recipe
 
                 // Fill from player inventory
-                IngredientComponentStorageWrapperHandlerItemStack.ComponentStorageWrapper playerInventory =
-                        new IngredientComponentStorageWrapperHandlerItemStack.ComponentStorageWrapper(IngredientComponent.ITEMSTACK, new InvWrapper(player.getInventory()));
+                IngredientComponentStorageWrapperHandlerItemStackSlotless.ComponentStorageWrapper playerInventory =
+                        new IngredientComponentStorageWrapperHandlerItemStackSlotless.ComponentStorageWrapper(IngredientComponent.ITEMSTACK, new DefaultSlotlessItemHandlerWrapper(VanillaContainerWrapper.of(player.getInventory())));
                 for (Map.Entry<Integer, Pair<ItemStack, Integer>> entry : this.slottedIngredientsFromPlayer.entrySet()) {
                     Integer matchCondition = entry.getValue().getRight();
                     ItemStack extracted = playerInventory.extract(entry.getValue().getLeft(), matchCondition, false);

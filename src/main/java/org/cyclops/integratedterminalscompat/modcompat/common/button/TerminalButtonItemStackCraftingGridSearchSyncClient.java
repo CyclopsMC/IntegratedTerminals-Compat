@@ -1,5 +1,6 @@
 package org.cyclops.integratedterminalscompat.modcompat.common.button;
 
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import org.cyclops.cyclopscore.client.gui.component.button.ButtonImage;
@@ -31,7 +32,7 @@ public class TerminalButtonItemStackCraftingGridSearchSyncClient implements ITer
     }
 
     @Override
-    public void onClick(TerminalStorageTabIngredientComponentClient<?, ?> clientTab, @Nullable TerminalStorageTabIngredientComponentCommon<?, ?> commonTab, ButtonImage guiButton, int channel, int mouseButton) {
+    public void onClick(TerminalStorageTabIngredientComponentClient<?, ?> clientTab, @Nullable TerminalStorageTabIngredientComponentCommon<?, ?> commonTab, ButtonImage guiButton, int channel, MouseButtonEvent mouseButton, boolean flag) {
         this.button.active = !this.button.active;
 
         CompoundTag data = new CompoundTag();
