@@ -1,1 +1,14 @@
-{}
+{
+  "_comment": "Gui",
+  "gui.integratedterminalscompat.terminal_storage.craftinggrid.jeisync": "Sincronização de Pesquisa do JEI",
+  "gui.integratedterminalscompat.terminal_storage.craftinggrid.jeisync.info": "Sincronize a caixa de pesquisa com o JEI.",
+  "gui.integratedterminalscompat.terminal_storage.craftinggrid.emisync": "Sincronização de Pesquisa do EMI",
+  "gui.integratedterminalscompat.terminal_storage.craftinggrid.emisync.info": "Sincronize a caixa de pesquisa com o EMI.",
+  "gui.integratedterminalscompat.terminal_storage.craftinggrid.reisync": "Sincronização de Pesquisa do REI",
+  "gui.integratedterminalscompat.terminal_storage.craftinggrid.reisync.info": "Sincronize a caixa de pesquisa com o REI.",
+  "gui.integratedterminalscompat.terminal_storage.jei.transfer.craftable": "Itens automaticamente criáveis",
+  "gui.integratedterminalscompat.terminal_storage.jei.transfer.craftable_partial": "Itens parcialmente criáveis automaticamente",
+  "gui.integratedterminalscompat.terminal_storage.jei.transfer.missing": "Itens ausentes",
+  "gui.integratedterminalscompat.terminal_storage.jei.transfer.craft.info": "Ctrl+Clique para ativar a fabricação automática",
+  "gui.integratedterminalscompat.terminal_storage.jei.transfer.craft.info_cmd": "Cmd+clique para ativar a fabricação automática"
+}
