@@ -48,7 +48,13 @@ def getSecrets() {
 //}
 
 sourceSets {
-    main
+    main {
+        java {
+            // Exclude EMI and REI compat until compatible versions are available for this MC version
+            exclude '**/modcompat/emi/**'
+            exclude '**/modcompat/rei/**'
+        }
+    }
     test
 }
 sourceSets.main.resources { srcDir 'src/generated/resources' }
