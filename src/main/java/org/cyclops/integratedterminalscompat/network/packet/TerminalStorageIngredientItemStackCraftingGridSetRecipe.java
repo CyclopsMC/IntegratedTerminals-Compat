@@ -10,12 +10,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
 import org.apache.commons.lang3.tuple.Pair;
-import org.cyclops.commoncapabilities.api.capability.itemhandler.DefaultSlotlessItemHandlerWrapper;
 import org.cyclops.commoncapabilities.api.ingredient.IngredientComponent;
+import org.cyclops.commoncapabilities.api.ingredient.ResourceConverterItem;
 import org.cyclops.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
-import org.cyclops.commoncapabilities.ingredient.storage.IngredientComponentStorageWrapperHandlerItemStackSlotless;
+import org.cyclops.commoncapabilities.ingredient.storage.IngredientComponentStorageWrapperHandlerResourceHandler;
 import org.cyclops.cyclopscore.network.CodecField;
 import org.cyclops.cyclopscore.network.PacketCodec;
 import org.cyclops.integratedterminals.api.terminalstorage.ITerminalStorageTabCommon;
@@ -148,8 +149,8 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
                 // Try filling the grid with the given recipe
 
                 // Fill from player inventory
-                IngredientComponentStorageWrapperHandlerItemStackSlotless.ComponentStorageWrapper playerInventory =
-                        new IngredientComponentStorageWrapperHandlerItemStackSlotless.ComponentStorageWrapper(IngredientComponent.ITEMSTACK, new DefaultSlotlessItemHandlerWrapper(VanillaContainerWrapper.of(player.getInventory())));
+                IngredientComponentStorageWrapperHandlerResourceHandler.ComponentStorageWrapper<ItemResource, ItemStack, Integer> playerInventory =
+                        new IngredientComponentStorageWrapperHandlerResourceHandler.ComponentStorageWrapper<>(IngredientComponent.ITEMSTACK, VanillaContainerWrapper.of(player.getInventory()), new ResourceConverterItem());
                 for (Map.Entry<Integer, Pair<ItemStack, Integer>> entry : this.slottedIngredientsFromPlayer.entrySet()) {
                     Integer matchCondition = entry.getValue().getRight();
                     ItemStack extracted = playerInventory.extract(entry.getValue().getLeft(), matchCondition, false);

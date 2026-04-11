@@ -10,12 +10,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
 import org.apache.commons.lang3.tuple.Pair;
-import org.cyclops.commoncapabilities.api.capability.itemhandler.DefaultSlotlessItemHandlerWrapper;
 import org.cyclops.commoncapabilities.api.ingredient.IngredientComponent;
-import org.cyclops.commoncapabilities.ingredient.storage.IngredientComponentStorageWrapperHandlerItemStackSlotless;
-import org.lwjgl.glfw.GLFW;
+import org.cyclops.commoncapabilities.api.ingredient.ResourceConverterItem;
+import org.cyclops.commoncapabilities.ingredient.storage.IngredientComponentStorageWrapperHandlerResourceHandler;
 import org.cyclops.cyclopscore.ingredient.collection.IIngredientCollectionMutable;
 import org.cyclops.cyclopscore.ingredient.collection.IngredientCollectionHelpers;
 import org.cyclops.cyclopscore.ingredient.collection.IngredientCollectionPrototypeMap;
@@ -163,8 +163,8 @@ public class RecipeTransferHelpers {
     }
 
     public static <T extends RecipeInputSlot> void transferRecipe(ContainerTerminalStorageBase<?> container, Iterable<T> recipeInputSlots, Player player, TerminalStorageTabIngredientComponentItemStackCraftingCommon tabCommonCrafting, Function<ItemStack, Integer> itemStackToMatchCondition, boolean maxTransfer) {
-        IngredientComponentStorageWrapperHandlerItemStackSlotless.ComponentStorageWrapper playerInventory =
-                new IngredientComponentStorageWrapperHandlerItemStackSlotless.ComponentStorageWrapper(IngredientComponent.ITEMSTACK, new DefaultSlotlessItemHandlerWrapper(VanillaContainerWrapper.of(player.getInventory())));
+        IngredientComponentStorageWrapperHandlerResourceHandler.ComponentStorageWrapper<ItemResource, ItemStack, Integer> playerInventory =
+                new IngredientComponentStorageWrapperHandlerResourceHandler.ComponentStorageWrapper<>(IngredientComponent.ITEMSTACK, VanillaContainerWrapper.of(player.getInventory()), new ResourceConverterItem());
 
         // Send a packet to the server if the recipe effectively needs to be applied to the grid
         Map<Integer, Pair<ItemStack, Integer>> slottedIngredientsFromPlayer = Maps.newHashMap();
@@ -209,7 +209,7 @@ public class RecipeTransferHelpers {
 
         IntegratedTerminalsCompat._instance.getPacketHandler().sendToServer(
                 new TerminalStorageIngredientItemStackCraftingGridSetRecipe(container.getSelectedTab(),
-                        container.getSelectedChannel(), maxTransfer, slottedIngredientsFromPlayer, slottedIngredientsFromStorage, InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), GLFW.GLFW_KEY_LEFT_CONTROL) || InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), GLFW.GLFW_KEY_RIGHT_CONTROL)));
+                        container.getSelectedChannel(), maxTransfer, slottedIngredientsFromPlayer, slottedIngredientsFromStorage, InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), InputConstants.KEY_LCONTROL) || InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), InputConstants.KEY_RCONTROL)));
     }
 
 }
