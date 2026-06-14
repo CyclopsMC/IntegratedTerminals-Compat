@@ -154,7 +154,7 @@ dependencies {
     compileOnly("dev.emi:emi-neoforge:${emi_version}") // https://maven.terraformersmc.com/releases/dev/emi/emi-neoforge
 
     compileOnly("me.shedaniel:RoughlyEnoughItems-neoforge:${rei_version}") // https://maven.shedaniel.me/me/shedaniel/RoughlyEnoughItems-neoforge/ or just look on CurseForge by modloader and MC version...
-    implementation("me.shedaniel.cloth:cloth-config-neoforge:$cloth_config_version");
+    implementation("me.shedaniel.cloth:cloth-config-neoforge:${cloth_config_version}:neoforge");
     implementation("dev.architectury:architectury-neoforge:$architectury_version");
 }
 
