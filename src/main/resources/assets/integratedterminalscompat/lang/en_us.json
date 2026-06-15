@@ -10,5 +10,12 @@
   "gui.integratedterminalscompat.terminal_storage.jei.transfer.craftable_partial": "Partially auto-craftable items",
   "gui.integratedterminalscompat.terminal_storage.jei.transfer.missing": "Missing items",
   "gui.integratedterminalscompat.terminal_storage.jei.transfer.craft.info": "Ctrl+click to trigger auto-crafting",
-  "gui.integratedterminalscompat.terminal_storage.jei.transfer.craft.info_cmd": "Cmd+click to trigger auto-crafting"
+  "gui.integratedterminalscompat.terminal_storage.jei.transfer.craft.info_cmd": "Cmd+click to trigger auto-crafting",
+  "gui.integratedterminalscompat.terminal_storage.crafting_job.error.title": "Crafting Job Error",
+  "gui.integratedterminalscompat.terminal_storage.crafting_job.summary.title.started_only": "Auto-Craft Start",
+  "gui.integratedterminalscompat.terminal_storage.crafting_job.summary.title.failed_only": "Auto-Craft Fail",
+  "gui.integratedterminalscompat.terminal_storage.crafting_job.summary.title.mixed": "Auto-Craft Partial Fail",
+  "gui.integratedterminalscompat.terminal_storage.crafting_job.summary.started_only": "Started auto-crafting for %s",
+  "gui.integratedterminalscompat.terminal_storage.crafting_job.summary.failed_only": "Auto-crafting failed for %s",
+  "gui.integratedterminalscompat.terminal_storage.crafting_job.summary.mixed": "Started auto-crafting for %s, but failed for %s"
 }

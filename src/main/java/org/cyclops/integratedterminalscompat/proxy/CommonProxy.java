@@ -4,6 +4,7 @@ import org.cyclops.cyclopscore.init.ModBase;
 import org.cyclops.cyclopscore.network.PacketHandler;
 import org.cyclops.cyclopscore.proxy.CommonProxyComponent;
 import org.cyclops.integratedterminalscompat.IntegratedTerminalsCompat;
+import org.cyclops.integratedterminalscompat.network.packet.TerminalStorageIngredientCraftingJobErrorToastPacket;
 import org.cyclops.integratedterminalscompat.network.packet.TerminalStorageIngredientItemStackCraftingGridSetRecipe;
 
 /**
@@ -23,5 +24,6 @@ public class CommonProxy extends CommonProxyComponent {
         super.registerPacketHandlers(packetHandler);
 
         packetHandler.register(TerminalStorageIngredientItemStackCraftingGridSetRecipe.ID, TerminalStorageIngredientItemStackCraftingGridSetRecipe.CODEC);
+        packetHandler.register(TerminalStorageIngredientCraftingJobErrorToastPacket.ID, TerminalStorageIngredientCraftingJobErrorToastPacket.CODEC);
     }
 }

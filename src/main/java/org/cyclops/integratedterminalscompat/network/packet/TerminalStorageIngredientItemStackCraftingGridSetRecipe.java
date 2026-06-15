@@ -29,8 +29,10 @@ import org.cyclops.integratedterminals.core.terminalstorage.TerminalStorageTabIn
 import org.cyclops.integratedterminals.core.terminalstorage.crafting.TerminalStorageTabIngredientCraftingHandlers;
 import org.cyclops.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import org.cyclops.integratedterminals.network.packet.TerminalStorageIngredientItemStackCraftingGridClear;
+import org.cyclops.integratedterminalscompat.IntegratedTerminalsCompat;
 import org.cyclops.integratedterminalscompat.Reference;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -162,6 +164,8 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
                 // Fill from storage
                 IIngredientComponentStorage<ItemStack, Integer> storage = tabServerCrafting.getIngredientNetwork()
                         .getChannel(channel);
+                List<String> startedIngredientNames = new ArrayList<>();
+                List<String> failedIngredientNames = new ArrayList<>();
                 for (Map.Entry<Integer, List<Pair<ItemStack, Integer>>> entry : this.slottedIngredientsFromStorage.entrySet()) {
                     int slotId = entry.getKey() + slotOffset;
                     Slot slot = container.getSlot(slotId);
@@ -179,35 +183,46 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
                             slot.set(extracted);
                         } else if (this.triggerCraftingJobs) {
                             // Trigger crafting job if enabled
-                            boolean startedJob = false;
+                            boolean slotJobStarted = false;
+                            ItemStack slotStartItem = null;
                             for (ITerminalStorageTabIngredientCraftingHandler handler : TerminalStorageTabIngredientCraftingHandlers.REGISTRY.getHandlers()) {
                                 for (Pair<ItemStack, Integer> stackEntry : entry.getValue()) {
                                     for (ITerminalCraftingOption<ItemStack> craftingOption : (Collection<ITerminalCraftingOption<ItemStack>>) handler.getCraftingOptionsWithOutput(tabServerCrafting, channel, stackEntry.getLeft(), stackEntry.getRight())) {
                                         ITerminalCraftingPlan craftingPlan = handler.calculateCraftingPlan(tabServerCrafting.getNetwork(), channel, craftingOption, 1);
                                         if (craftingPlan.getStatus().isValid()) {
                                             try {
-                                                handler.startCraftingJob(tabServerCrafting.getNetwork(), channel, craftingPlan, player);
-                                                startedJob = true;
+                                                handler.startCraftingJob(tabServerCrafting.getNetwork(), channel, craftingPlan, player); // TODO: if there are identical items across slots, we should group them in a single job
+                                                slotJobStarted = true;
+                                                slotStartItem = stackEntry.getLeft();
                                                 break;
                                             } catch (CraftingJobStartException e) {
                                                 // Ignore jobs that could not start
                                             }
                                         }
                                     }
-                                    if (startedJob) {
+                                    if (slotJobStarted) {
                                         break;
                                     }
                                 }
-                                if (startedJob) {
+                                if (slotJobStarted) {
                                     break;
                                 }
+                            }
+                            if (slotJobStarted) {
+                                startedIngredientNames.add(slotStartItem.getCount() + "x " + slotStartItem.getHoverName().getString());
+                            } else {
+                                ItemStack representative = entry.getValue().get(0).getLeft();
+                                failedIngredientNames.add(representative.getCount() + "x " + representative.getHoverName().getString());
                             }
                         }
                     }
                 }
 
-                // Notify the client
-                // TODO?
+                // Notify the client with a summary of crafting jobs
+                if (this.triggerCraftingJobs && (!startedIngredientNames.isEmpty() || !failedIngredientNames.isEmpty())) {
+                    IntegratedTerminalsCompat._instance.getPacketHandler().sendToPlayer(
+                            new TerminalStorageIngredientCraftingJobErrorToastPacket(startedIngredientNames, failedIngredientNames), player);
+                }
             }
         }
     }
