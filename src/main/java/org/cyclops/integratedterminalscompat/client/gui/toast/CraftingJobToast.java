@@ -1,0 +1,101 @@
+package org.cyclops.integratedterminalscompat.client.gui.toast;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.toasts.Toast;
+import net.minecraft.client.gui.components.toasts.ToastManager;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.ARGB;
+import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.world.item.ItemStack;
+import org.cyclops.integratedterminalscompat.Reference;
+
+import java.util.List;
+
+/**
+ * A toast that shows a per-state item icon alongside a title and subtitle.
+ * @author rubensworks
+ */
+public class CraftingJobToast implements Toast {
+
+    private static final Identifier BACKGROUND_SPRITE = Identifier.fromNamespaceAndPath(Reference.MOD_ID, "toast/crafting_job");
+    private static final int DISPLAY_MILLIS = 5000;
+    private static final int MARGIN = 7;
+    private static final int ICON_LEFT = 7;
+    private static final int ICON_SIZE = 16;
+    private static final int TEXT_LEFT = ICON_LEFT + ICON_SIZE + 5;
+    private static final int LINE_SPACING = 12;
+    private Visibility wantedVisibility;
+
+    public enum Type {
+        SUCCESS, FAILURE, MIXED
+    }
+
+    private final Type type;
+    private final ItemStack icon;
+    private Component title;
+    private List<FormattedCharSequence> subtitleLines;
+    private long lastChangedAt = Long.MIN_VALUE;
+    private boolean changed = true;
+
+    public CraftingJobToast(Type type, ItemStack icon, Component title, Component subtitle) {
+        this.type = type;
+        this.icon = icon;
+        this.title = title;
+        this.subtitleLines = splitSubtitle(subtitle);
+    }
+
+    /**
+     * Update the content of this toast in-place without adding a new one.
+     */
+    public void reset(Component newTitle, Component newSubtitle) {
+        this.title = newTitle;
+        this.subtitleLines = splitSubtitle(newSubtitle);
+        this.changed = true;
+    }
+
+    private List<FormattedCharSequence> splitSubtitle(Component text) {
+        return Minecraft.getInstance().font.split(text, width() - TEXT_LEFT - MARGIN);
+    }
+
+    @Override
+    public int height() {
+        return 20 + Math.max(1, subtitleLines.size()) * LINE_SPACING;
+    }
+
+    @Override
+    public void update(ToastManager toastManager, long timeSinceLastVisible) {
+        if (changed) {
+            lastChangedAt = timeSinceLastVisible;
+            changed = false;
+        }
+        this.wantedVisibility = timeSinceLastVisible - lastChangedAt < (long) (DISPLAY_MILLIS * toastManager.getNotificationDisplayTimeMultiplier())
+                ? Visibility.SHOW
+                : Visibility.HIDE;
+    }
+
+    @Override
+    public Visibility getWantedVisibility() {
+        return this.wantedVisibility;
+    }
+
+    @Override
+    public void extractRenderState(GuiGraphicsExtractor graphics, Font font, long timeSinceLastVisible) {
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BACKGROUND_SPRITE, 0, 0, width(), height());
+        graphics.fakeItem(icon, ICON_LEFT, 8);
+
+        graphics.text(font, title, TEXT_LEFT, 7, ARGB.opaque(0xFFFFFF), false);
+        for (int i = 0; i < subtitleLines.size(); i++) {
+            graphics.text(font, subtitleLines.get(i), TEXT_LEFT, 18 + i * LINE_SPACING, ARGB.opaque(0xAAAAAA), false);
+        }
+    }
+
+    @Override
+    public Object getToken() {
+        // One toast slot per state type
+        return type;
+    }
+}

@@ -27,6 +27,7 @@ import org.cyclops.integratedterminals.core.terminalstorage.crafting.HandlerWrap
 import org.cyclops.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import org.cyclops.integratedterminalscompat.IntegratedTerminalsCompat;
 import org.cyclops.integratedterminalscompat.network.packet.TerminalStorageIngredientItemStackCraftingGridSetRecipe;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -209,7 +210,7 @@ public class RecipeTransferHelpers {
 
         IntegratedTerminalsCompat._instance.getPacketHandler().sendToServer(
                 new TerminalStorageIngredientItemStackCraftingGridSetRecipe(container.getSelectedTab(),
-                        container.getSelectedChannel(), maxTransfer, slottedIngredientsFromPlayer, slottedIngredientsFromStorage, InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), InputConstants.KEY_LCONTROL) || InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), InputConstants.KEY_RCONTROL)));
+                        container.getSelectedChannel(), maxTransfer, slottedIngredientsFromPlayer, slottedIngredientsFromStorage, InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), GLFW.GLFW_KEY_LEFT_SUPER) || InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), GLFW.GLFW_KEY_RIGHT_SUPER)));
     }
 
 }

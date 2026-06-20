@@ -29,9 +29,15 @@ import org.cyclops.integratedterminals.core.terminalstorage.TerminalStorageTabIn
 import org.cyclops.integratedterminals.core.terminalstorage.crafting.TerminalStorageTabIngredientCraftingHandlers;
 import org.cyclops.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import org.cyclops.integratedterminals.network.packet.TerminalStorageIngredientItemStackCraftingGridClear;
+import org.cyclops.integratedterminalscompat.IntegratedTerminalsCompat;
 import org.cyclops.integratedterminalscompat.Reference;
 
+import org.cyclops.cyclopscore.ingredient.collection.IIngredientMapMutable;
+import org.cyclops.cyclopscore.ingredient.collection.IngredientHashMap;
+
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -161,6 +167,12 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
                 // Fill from storage
                 IIngredientComponentStorage<ItemStack, Integer> storage = tabServerCrafting.getIngredientNetwork()
                         .getChannel(channel);
+                List<String> startedIngredientNames = new ArrayList<>();
+                List<String> failedIngredientNames = new ArrayList<>();
+
+                // Collect slots that couldn't be filled from storage (may need crafting jobs)
+                List<Map.Entry<Integer, List<Pair<ItemStack, Integer>>>> slotsNeedingCrafting = new ArrayList<>();
+
                 for (Map.Entry<Integer, List<Pair<ItemStack, Integer>>> entry : this.slottedIngredientsFromStorage.entrySet()) {
                     int slotId = entry.getKey() + slotOffset;
                     Slot slot = container.getSlot(slotId);
@@ -177,37 +189,95 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
                         if (!extracted.isEmpty()) {
                             slot.set(extracted);
                         } else if (this.triggerCraftingJobs) {
-                            // Trigger crafting job if enabled
-                            boolean startedJob = false;
-                            for (ITerminalStorageTabIngredientCraftingHandler handler : TerminalStorageTabIngredientCraftingHandlers.REGISTRY.getHandlers()) {
-                                for (Pair<ItemStack, Integer> stackEntry : entry.getValue()) {
-                                    for (ITerminalCraftingOption<ItemStack> craftingOption : (Collection<ITerminalCraftingOption<ItemStack>>) handler.getCraftingOptionsWithOutput(tabServerCrafting, channel, stackEntry.getLeft(), stackEntry.getRight())) {
-                                        ITerminalCraftingPlan craftingPlan = handler.calculateCraftingPlan(tabServerCrafting.getNetwork(), channel, craftingOption, 1);
-                                        if (craftingPlan.getStatus().isValid()) {
-                                            try {
-                                                handler.startCraftingJob(tabServerCrafting.getNetwork(), channel, craftingPlan, player);
-                                                startedJob = true;
-                                                break;
-                                            } catch (CraftingJobStartException e) {
-                                                // Ignore jobs that could not start
-                                            }
-                                        }
-                                    }
-                                    if (startedJob) {
-                                        break;
-                                    }
-                                }
-                                if (startedJob) {
-                                    break;
-                                }
-                            }
+                            slotsNeedingCrafting.add(entry);
                         }
                     }
                 }
 
-                // Notify the client
-                // TODO?
+                if (this.triggerCraftingJobs && !slotsNeedingCrafting.isEmpty()) {
+                    // Group identical items across slots to start a single crafting job per unique item
+                    // Keys are ItemStacks normalized to count=1 for identity-based lookup without repeated list scans
+                    IIngredientMapMutable<ItemStack, Integer, CraftingJobGroup> craftingGroupsMap = new IngredientHashMap<>(IngredientComponent.ITEMSTACK);
+
+                    for (Map.Entry<Integer, List<Pair<ItemStack, Integer>>> entry : slotsNeedingCrafting) {
+                        boolean grouped = false;
+                        outer:
+                        for (ITerminalStorageTabIngredientCraftingHandler handler : TerminalStorageTabIngredientCraftingHandlers.REGISTRY.getHandlers()) {
+                            for (Pair<ItemStack, Integer> stackEntry : entry.getValue()) {
+                                for (ITerminalCraftingOption<ItemStack> craftingOption : (Collection<ITerminalCraftingOption<ItemStack>>) handler.getCraftingOptionsWithOutput(tabServerCrafting, channel, stackEntry.getLeft(), stackEntry.getRight())) {
+                                    ITerminalCraftingPlan testPlan = handler.calculateCraftingPlan(tabServerCrafting.getNetwork(), channel, craftingOption, 1);
+                                    if (testPlan.getStatus().isValid()) {
+                                        // Use normalized (count=1) key for O(1) group lookup by item identity
+                                        ItemStack normalizedKey = stackEntry.getLeft().copyWithCount(1);
+                                        CraftingJobGroup existingGroup = craftingGroupsMap.get(normalizedKey);
+                                        if (existingGroup != null) {
+                                            existingGroup.totalCount += stackEntry.getLeft().getCount();
+                                        } else {
+                                            craftingGroupsMap.put(normalizedKey, new CraftingJobGroup(handler, craftingOption, stackEntry.getLeft().getCount(), stackEntry.getLeft()));
+                                        }
+                                        grouped = true;
+                                        break outer;
+                                    }
+                                }
+                            }
+                        }
+                        if (!grouped) {
+                            ItemStack representative = entry.getValue().get(0).getLeft();
+                            failedIngredientNames.add(representative.getCount() + "x " + representative.getHoverName().getString());
+                        }
+                    }
+
+                    // Start one crafting job per group
+                    for (CraftingJobGroup group : craftingGroupsMap.values()) {
+                        // Determine how many items a single craft produces, so we only request more
+                        // crafts when totalCount actually exceeds the single-craft output quantity.
+                        long recipeOutputCount = 0;
+                        Iterator<ItemStack> outputs = group.craftingOption.getOutputs();
+                        while (outputs.hasNext()) {
+                            ItemStack output = outputs.next();
+                            if (ItemStack.isSameItemSameComponents(output, group.representative)) {
+                                recipeOutputCount += output.getCount();
+                            }
+                        }
+                        long requestedQuantity = (long) Math.ceil((double) group.totalCount / recipeOutputCount);
+                        ITerminalCraftingPlan craftingPlan = group.handler.calculateCraftingPlan(tabServerCrafting.getNetwork(), channel, group.craftingOption, requestedQuantity);
+                        if (craftingPlan.getStatus().isValid()) {
+                            try {
+                                group.handler.startCraftingJob(tabServerCrafting.getNetwork(), channel, craftingPlan, player);
+                                startedIngredientNames.add(group.totalCount + "x " + group.representative.getHoverName().getString());
+                            } catch (CraftingJobStartException e) {
+                                // Ignore jobs that could not start
+                                failedIngredientNames.add(group.totalCount + "x " + group.representative.getHoverName().getString());
+                            }
+                        } else {
+                            failedIngredientNames.add(group.totalCount + "x " + group.representative.getHoverName().getString());
+                        }
+                    }
+                }
+
+                // Notify the client with a summary of crafting jobs
+                if (this.triggerCraftingJobs && (!startedIngredientNames.isEmpty() || !failedIngredientNames.isEmpty())) {
+                    IntegratedTerminalsCompat._instance.getPacketHandler().sendToPlayer(
+                            new TerminalStorageIngredientCraftingJobErrorToastPacket(startedIngredientNames, failedIngredientNames), player);
+                }
             }
+        }
+    }
+
+    private static class CraftingJobGroup {
+        final ITerminalStorageTabIngredientCraftingHandler handler;
+        final ITerminalCraftingOption<ItemStack> craftingOption;
+        int totalCount;
+        final ItemStack representative;
+
+        CraftingJobGroup(ITerminalStorageTabIngredientCraftingHandler handler,
+                         ITerminalCraftingOption<ItemStack> craftingOption,
+                         int totalCount,
+                         ItemStack representative) {
+            this.handler = handler;
+            this.craftingOption = craftingOption;
+            this.totalCount = totalCount;
+            this.representative = representative;
         }
     }
 

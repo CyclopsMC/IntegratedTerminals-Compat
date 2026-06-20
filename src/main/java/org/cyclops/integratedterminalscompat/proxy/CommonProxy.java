@@ -4,6 +4,7 @@ import org.cyclops.cyclopscore.init.ModBaseNeoForge;
 import org.cyclops.cyclopscore.network.IPacketHandler;
 import org.cyclops.cyclopscore.proxy.CommonProxyComponent;
 import org.cyclops.integratedterminalscompat.IntegratedTerminalsCompat;
+import org.cyclops.integratedterminalscompat.network.packet.TerminalStorageIngredientCraftingJobErrorToastPacket;
 import org.cyclops.integratedterminalscompat.network.packet.TerminalStorageIngredientItemStackCraftingGridSetRecipe;
 
 /**
@@ -23,5 +24,6 @@ public class CommonProxy extends CommonProxyComponent {
         super.registerPackets(packetHandler);
 
         packetHandler.register(TerminalStorageIngredientItemStackCraftingGridSetRecipe.class, TerminalStorageIngredientItemStackCraftingGridSetRecipe.ID, TerminalStorageIngredientItemStackCraftingGridSetRecipe.CODEC);
+        packetHandler.register(TerminalStorageIngredientCraftingJobErrorToastPacket.class, TerminalStorageIngredientCraftingJobErrorToastPacket.ID, TerminalStorageIngredientCraftingJobErrorToastPacket.CODEC);
     }
 }
