@@ -63,7 +63,7 @@ public class TerminalStorageIngredientCraftingJobErrorToastPacketClient {
         }
 
         // Update an existing visible toast of the same type, or add a new one
-        var toastManager = Minecraft.getInstance().getToastManager();
+        var toastManager = Minecraft.getInstance().gui.toastManager();
         CraftingJobToast existing = toastManager.getToast(CraftingJobToast.class, toastType);
         if (existing != null) {
             existing.reset(title, subtitle);
