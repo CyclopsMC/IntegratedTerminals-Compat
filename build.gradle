@@ -149,8 +149,7 @@ dependencies {
 
     implementation("mezz.jei:jei-${project.jei_version}") // https://maven.blamejared.com/mezz/jei/ https://dvs1.progwml6.com/jenkins/
 
-    //runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:${project.curios_version}") // https://maven.theillusivec4.top/top/theillusivec4/curios/curios-forge/
-    compileOnly("top.theillusivec4.curios:curios-neoforge:${project.curios_version}:api") // https://maven.theillusivec4.top/top/theillusivec4/curios/curios-neoforge/
+    implementation("top.theillusivec4.curios:curios-neoforge:${project.curios_version}:api") // https://maven.theillusivec4.top/top/theillusivec4/curios/curios-neoforge/
 
     //compileOnly("dev.emi:emi-neoforge:${emi_version}") // https://maven.terraformersmc.com/releases/dev/emi/emi-neoforge
 
