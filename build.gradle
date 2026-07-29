@@ -50,9 +50,8 @@ def getSecrets() {
 sourceSets {
     main {
         java {
-            // Exclude EMI and REI compat until compatible versions are available for this MC version
+            // Exclude EMI compat until compatible versions are available for this MC version
             exclude '**/modcompat/emi/**'
-            exclude '**/modcompat/rei/**'
         }
     }
     test
@@ -155,9 +154,9 @@ dependencies {
 
     //compileOnly("dev.emi:emi-neoforge:${emi_version}") // https://maven.terraformersmc.com/releases/dev/emi/emi-neoforge
 
-    //compileOnly("me.shedaniel:RoughlyEnoughItems-neoforge:${rei_version}") // https://maven.shedaniel.me/me/shedaniel/RoughlyEnoughItems-neoforge/ or just look on CurseForge by modloader and MC version...
-    //implementation("me.shedaniel.cloth:cloth-config-neoforge:$cloth_config_version"); // https://maven.shedaniel.me/me/shedaniel/cloth/cloth-config-neoforge/
-    //implementation("dev.architectury:architectury-neoforge:$architectury_version"); // https://maven.shedaniel.me/dev/architectury/architectury-neoforge/
+    compileOnly("me.shedaniel:RoughlyEnoughItems-neoforge:${rei_version}") // https://maven.shedaniel.me/me/shedaniel/RoughlyEnoughItems-neoforge/ or just look on CurseForge by modloader and MC version...
+    implementation("me.shedaniel.cloth:cloth-config-neoforge:$cloth_config_version"); // https://maven.shedaniel.me/me/shedaniel/cloth/cloth-config-neoforge/
+    implementation("dev.architectury:architectury-neoforge:$architectury_version"); // https://maven.shedaniel.me/dev/architectury/architectury-neoforge/
 }
 
 neoForge {
