@@ -12,6 +12,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import org.cyclops.commoncapabilities.api.ingredient.IngredientComponent;
 import net.minecraft.world.level.Level;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
@@ -130,11 +131,13 @@ public class TerminalStorageIngredientCraftingJobErrorToastPacket extends Packet
 
         // Update an existing visible toast of the same type, or add a new one
         var toastManager = Minecraft.getInstance().getToasts();
-        CraftingJobToast existing = toastManager.getToast(CraftingJobToast.class, toastType);
+        CraftingJobToast<ItemStack, Integer> existing = (CraftingJobToast<ItemStack, Integer>)
+                toastManager.getToast(CraftingJobToast.class, toastType);
         if (existing != null) {
-            existing.reset(title, subtitle);
+            existing.reset(icon, title, subtitle);
         } else {
-            toastManager.addToast(new CraftingJobToast(toastType, icon, title, subtitle));
+            toastManager.addToast(new CraftingJobToast<>(toastType, IngredientComponent.ITEMSTACK, icon,
+                    title, subtitle));
         }
     }
 
