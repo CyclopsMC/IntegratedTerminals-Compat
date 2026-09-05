@@ -133,6 +133,18 @@ dependencies {
         }
     }
 
+    // Integrated Tunnels is only needed at runtime, as IntegratedTerminals' game tests use it to set up networks with item storage.
+    // Add something like 'integratedtunnels_version_local=0.1.0-DEV' to your secrets.properties if you want to use a custom local Integrated Tunnels version.
+    if(secrets.integratedtunnels_version_local) {
+        runtimeOnly ("org.cyclops.integratedtunnels:integratedtunnels-${project.minecraft_version}-neoforge:${secrets.integratedtunnels_version_local}") {
+            transitive = false
+        }
+    } else {
+        runtimeOnly ("org.cyclops.integratedtunnels:integratedtunnels-${project.minecraft_version}-neoforge:${project.integratedtunnels_version}") {
+            transitive = false
+        }
+    }
+
     // Add something like 'integratedterminals_version_local=0.1.0-DEV' to your secrets.properties if you want to use a custom local Integrated Tunnels Compat version.
     if(secrets.integratedterminals_version_local) {
         implementation ("org.cyclops.integratedterminals:integratedterminals-${project.minecraft_version}-neoforge:${secrets.integratedterminals_version_local}:slim") {
