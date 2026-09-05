@@ -6,7 +6,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import org.cyclops.integratedterminalscompat.client.gui.toast.CraftingJobToast;
+import org.cyclops.commoncapabilities.api.ingredient.IngredientComponent;
+import org.cyclops.integratedterminals.client.gui.toast.CraftingJobToast;
 
 import java.util.List;
 
@@ -27,13 +28,13 @@ public class TerminalStorageIngredientCraftingJobErrorToastPacketClient {
     }
 
     public static void showCraftingJobToast(List<String> startedIngredientNames, List<String> failedIngredientNames) {
-        CraftingJobToast.Type toastType;
+        ToastType toastType;
         ItemStack icon;
         Component title;
         Component subtitle;
 
         if (failedIngredientNames.isEmpty()) {
-            toastType = CraftingJobToast.Type.SUCCESS;
+            toastType = ToastType.SUCCESS;
             icon = new ItemStack(Items.CRAFTING_TABLE);
             title = Component.translatable(
                             "gui.integratedterminalscompat.terminal_storage.crafting_job.summary.title.started_only")
@@ -42,7 +43,7 @@ public class TerminalStorageIngredientCraftingJobErrorToastPacketClient {
                     "gui.integratedterminalscompat.terminal_storage.crafting_job.summary.started_only",
                     joinIngredients(startedIngredientNames));
         } else if (startedIngredientNames.isEmpty()) {
-            toastType = CraftingJobToast.Type.FAILURE;
+            toastType = ToastType.FAILURE;
             icon = new ItemStack(Items.BARRIER);
             title = Component.translatable(
                             "gui.integratedterminalscompat.terminal_storage.crafting_job.summary.title.failed_only")
@@ -51,7 +52,7 @@ public class TerminalStorageIngredientCraftingJobErrorToastPacketClient {
                     "gui.integratedterminalscompat.terminal_storage.crafting_job.summary.failed_only",
                     joinIngredients(failedIngredientNames));
         } else {
-            toastType = CraftingJobToast.Type.MIXED;
+            toastType = ToastType.MIXED;
             icon = new ItemStack(Items.BELL);
             title = Component.translatable(
                             "gui.integratedterminalscompat.terminal_storage.crafting_job.summary.title.mixed")
@@ -64,12 +65,21 @@ public class TerminalStorageIngredientCraftingJobErrorToastPacketClient {
 
         // Update an existing visible toast of the same type, or add a new one
         var toastManager = Minecraft.getInstance().gui.toastManager();
-        CraftingJobToast existing = toastManager.getToast(CraftingJobToast.class, toastType);
+        CraftingJobToast<ItemStack, Integer> existing = (CraftingJobToast<ItemStack, Integer>)
+                toastManager.getToast(CraftingJobToast.class, toastType);
         if (existing != null) {
-            existing.reset(title, subtitle);
+            existing.reset(icon, title, subtitle);
         } else {
-            toastManager.addToast(new CraftingJobToast(toastType, icon, title, subtitle));
+            toastManager.addToast(new CraftingJobToast<>(toastType, IngredientComponent.ITEMSTACK, icon,
+                    title, subtitle));
         }
+    }
+
+    /**
+     * The toast slot that a summary is shown in, so that summaries of the same kind replace each other.
+     */
+    private enum ToastType {
+        SUCCESS, FAILURE, MIXED
     }
 
 }
