@@ -4,12 +4,14 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import org.apache.logging.log4j.Level;
 import org.cyclops.cyclopscore.config.ConfigHandler;
 import org.cyclops.cyclopscore.init.ModBaseVersionable;
 import org.cyclops.cyclopscore.proxy.IClientProxy;
 import org.cyclops.cyclopscore.proxy.ICommonProxy;
 import org.cyclops.integratedterminalscompat.proxy.ClientProxy;
+import org.cyclops.integratedterminalscompat.modcompat.common.CraftingGridAutoFillListener;
 import org.cyclops.integratedterminalscompat.proxy.CommonProxy;
 
 /**
@@ -24,6 +26,14 @@ public class IntegratedTerminalsCompat extends ModBaseVersionable<IntegratedTerm
 
     public IntegratedTerminalsCompat(IEventBus modEventBus) {
         super(Reference.MOD_ID, (instance) -> _instance = instance, modEventBus);
+    }
+
+    @Override
+    protected void setup(FMLCommonSetupEvent event) {
+        super.setup(event);
+
+        // Registered here instead of in the proxy, as the client proxy does not delegate event hooks
+        CraftingGridAutoFillListener.register();
     }
 
     @Override
