@@ -8,6 +8,9 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.tuple.Pair;
+import org.cyclops.commoncapabilities.api.ingredient.IIngredientMatcher;
+import org.cyclops.commoncapabilities.api.ingredient.IPrototypedIngredient;
+import org.cyclops.commoncapabilities.api.ingredient.IngredientComponent;
 import org.cyclops.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
 import org.cyclops.integratedterminals.api.terminalstorage.ITerminalStorageTabCommon;
 import org.cyclops.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentItemStackCraftingCommon;
@@ -31,6 +34,10 @@ import java.util.UUID;
  *
  * This intentionally holds no crafting mod-specific types: crafting job ids are only compared by equality
  * to ids obtained from the same crafting handler.
+ *
+ * A started job is not guaranteed to complete under the id it was started with, as a crafting handler
+ * may split it over several crafting interfaces. Completed jobs that produce a pending ingredient are
+ * therefore also acted upon, regardless of their id.
  *
  * @author rubensworks
  */
@@ -67,10 +74,17 @@ public class CraftingGridAutoFill {
      *
      * @param player The player that requested the job.
      * @param craftingJobId The id of the completed job.
+     * @param outputs The outputs that the completed job produced.
      */
-    public static void onCraftingJobFinished(ServerPlayer player, Object craftingJobId) {
+    public static void onCraftingJobFinished(ServerPlayer player, Object craftingJobId,
+                                             List<IPrototypedIngredient<?, ?>> outputs) {
         PendingFill pendingFill = PENDING.get(player.getUUID());
-        if (pendingFill == null || !pendingFill.craftingJobIds.remove(craftingJobId)) {
+        if (pendingFill == null) {
+            return;
+        }
+        // Evaluate both, so that a started job is always forgotten once it completes
+        boolean startedJob = pendingFill.craftingJobIds.remove(craftingJobId);
+        if (!startedJob && !pendingFill.producesPendingIngredient(outputs)) {
             return;
         }
 
@@ -159,7 +173,30 @@ public class CraftingGridAutoFill {
         }
 
         public boolean isDone() {
-            return this.slots.isEmpty() || this.craftingJobIds.isEmpty();
+            return this.slots.isEmpty();
+        }
+
+        /**
+         * @return If any of the given outputs can fill one of the pending slots.
+         */
+        public boolean producesPendingIngredient(List<IPrototypedIngredient<?, ?>> outputs) {
+            IIngredientMatcher<ItemStack, Integer> matcher = IngredientComponent.ITEMSTACK.getMatcher();
+            for (IPrototypedIngredient<?, ?> output : outputs) {
+                if (output.getComponent() != IngredientComponent.ITEMSTACK) {
+                    continue;
+                }
+                ItemStack produced = (ItemStack) output.getPrototype();
+                for (PendingSlot pendingSlot : this.slots) {
+                    for (Pair<ItemStack, Integer> alternative : pendingSlot.alternatives) {
+                        // The produced quantity is unrelated to what the slot needs, so ignore it
+                        if (matcher.matches(alternative.getLeft(), produced,
+                                alternative.getRight() & matcher.getExactMatchNoQuantityCondition())) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
         }
 
         /**

@@ -37,7 +37,7 @@ public class CraftingGridAutoFillListener {
             return;
         }
 
-        CraftingGridAutoFill.onCraftingJobFinished(player, event.getCraftingJobId());
+        CraftingGridAutoFill.onCraftingJobFinished(player, event.getCraftingJobId(), event.getOutputs());
     }
 
     @SubscribeEvent
