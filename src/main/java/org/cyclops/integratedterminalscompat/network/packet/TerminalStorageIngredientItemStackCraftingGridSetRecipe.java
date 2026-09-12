@@ -29,17 +29,21 @@ import org.cyclops.integratedterminals.core.terminalstorage.TerminalStorageTabIn
 import org.cyclops.integratedterminals.core.terminalstorage.crafting.TerminalStorageTabIngredientCraftingHandlers;
 import org.cyclops.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import org.cyclops.integratedterminals.network.packet.TerminalStorageIngredientItemStackCraftingGridClear;
+import org.cyclops.integratedterminalscompat.GeneralConfig;
 import org.cyclops.integratedterminalscompat.IntegratedTerminalsCompat;
 import org.cyclops.integratedterminalscompat.Reference;
+import org.cyclops.integratedterminalscompat.modcompat.common.CraftingGridAutoFill;
 
 import org.cyclops.cyclopscore.ingredient.collection.IIngredientMapMutable;
 import org.cyclops.cyclopscore.ingredient.collection.IngredientHashMap;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Packet for setting the crafting grid recipe and filling it with items.
@@ -228,6 +232,7 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
                     }
 
                     // Start one crafting job per group
+                    Set<Object> startedCraftingJobIds = new HashSet<>();
                     for (CraftingJobGroup group : craftingGroupsMap.values()) {
                         // Determine how many items a single craft produces, so we only request more
                         // crafts when totalCount actually exceeds the single-craft output quantity.
@@ -243,7 +248,8 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
                         ITerminalCraftingPlan craftingPlan = group.handler.calculateCraftingPlan(tabServerCrafting.getNetwork(), channel, group.craftingOption, requestedQuantity);
                         if (craftingPlan.getStatus().isValid()) {
                             try {
-                                group.handler.startCraftingJob(tabServerCrafting.getNetwork(), channel, craftingPlan, player);
+                                group.handler.startCraftingJob(tabServerCrafting.getNetwork(), channel, craftingPlan, player, true);
+                                startedCraftingJobIds.add(craftingPlan.getId());
                                 startedIngredientNames.add(group.totalCount + "x " + group.representative.getHoverName().getString());
                             } catch (CraftingJobStartException e) {
                                 // Ignore jobs that could not start
@@ -251,6 +257,22 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
                             }
                         } else {
                             failedIngredientNames.add(group.totalCount + "x " + group.representative.getHoverName().getString());
+                        }
+                    }
+
+                    // Remember the slots we could not fill, so that they can be filled once the jobs complete
+                    if (GeneralConfig.craftingGridAutoFillOnCraftingJobCompletion && !startedCraftingJobIds.isEmpty()) {
+                        List<CraftingGridAutoFill.PendingSlot> pendingSlots = new ArrayList<>();
+                        for (Map.Entry<Integer, List<Pair<ItemStack, Integer>>> entry : slotsNeedingCrafting) {
+                            if (!container.getSlot(entry.getKey() + slotOffset).hasItem()) {
+                                pendingSlots.add(new CraftingGridAutoFill.PendingSlot(entry.getKey(), entry.getValue()));
+                            }
+                        }
+                        if (!pendingSlots.isEmpty()) {
+                            CraftingGridAutoFill.register(player, new CraftingGridAutoFill.PendingFill(
+                                    container.containerId, tabId, channel, startedCraftingJobIds, pendingSlots,
+                                    CraftingGridAutoFill.PendingFill.snapshotGrid(tabCommonCrafting),
+                                    CraftingGridAutoFill.PendingFill.newDeadline(player)));
                         }
                     }
                 }

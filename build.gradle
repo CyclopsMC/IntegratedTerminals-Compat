@@ -156,6 +156,30 @@ dependencies {
         }
     }
 
+    // Integrated Crafting and Integrated Tunnels are only needed at runtime,
+    // as IntegratedTerminals' game tests reference them and are scanned alongside ours.
+    // Add something like 'integratedcrafting_version_local=0.1.0-DEV' to your secrets.properties if you want to use a custom local Integrated Crafting version.
+    if(secrets.integratedcrafting_version_local) {
+        runtimeOnly ("org.cyclops.integratedcrafting:integratedcrafting-${project.minecraft_version}-neoforge:${secrets.integratedcrafting_version_local}") {
+            transitive = false
+        }
+    } else {
+        runtimeOnly ("org.cyclops.integratedcrafting:integratedcrafting-${project.minecraft_version}-neoforge:${project.integratedcrafting_version}") {
+            transitive = false
+        }
+    }
+
+    // Add something like 'integratedtunnels_version_local=0.1.0-DEV' to your secrets.properties if you want to use a custom local Integrated Tunnels version.
+    if(secrets.integratedtunnels_version_local) {
+        runtimeOnly ("org.cyclops.integratedtunnels:integratedtunnels-${project.minecraft_version}-neoforge:${secrets.integratedtunnels_version_local}") {
+            transitive = false
+        }
+    } else {
+        runtimeOnly ("org.cyclops.integratedtunnels:integratedtunnels-${project.minecraft_version}-neoforge:${project.integratedtunnels_version}") {
+            transitive = false
+        }
+    }
+
     if(secrets.commoncapabilities_version_local) {
         implementation ("org.cyclops.commoncapabilities:commoncapabilities-${project.minecraft_version}-neoforge:${secrets.commoncapabilities_version_local}") {
             transitive = false
@@ -347,6 +371,17 @@ spotless {
         leadingTabsToSpaces()
     }
 }
+
+// Run tasks resolve the runtime-only mods lazily, so resolve them during the build already.
+// This way, later run tasks (such as the game tests in CI) don't need repository credentials.
+tasks.register('resolveRuntimeClasspath') {
+    // Capture the configuration at configuration time, as the configuration cache disallows referencing it from doLast.
+    FileCollection runtimeClasspathFiles = configurations.runtimeClasspath
+    doLast {
+        runtimeClasspathFiles.files
+    }
+}
+build.dependsOn resolveRuntimeClasspath
 
 tasks.register('updateGitHooks', Copy) {
     from './scripts/pre-commit'
