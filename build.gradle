@@ -347,6 +347,17 @@ spotless {
     }
 }
 
+// Run tasks resolve the runtime-only mods lazily, so resolve them during the build already.
+// This way, later run tasks (such as the game tests in CI) don't need repository credentials.
+tasks.register('resolveRuntimeClasspath') {
+    // Capture the configuration at configuration time, as the configuration cache disallows referencing it from doLast.
+    FileCollection runtimeClasspathFiles = configurations.runtimeClasspath
+    doLast {
+        runtimeClasspathFiles.files
+    }
+}
+build.dependsOn resolveRuntimeClasspath
+
 tasks.register('updateGitHooks', Copy) {
     from './scripts/pre-commit'
     into './.git/hooks'
